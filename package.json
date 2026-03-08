@@ -1,0 +1,26 @@
+{
+  "name": "puskesmas",
+  "version": "1.0.0",
+  "description": "Sistem Informasi Pelayanan Puskesmas adalah aplikasi berbasis web untuk mendigitalisasi operasional puskesmas, dari pendaftaran pasien hingga manajemen apotek. Sistem ini dibangun secara full-stack dari awal, di mana setiap anggota mengembangkan sisi backend dan frontend. Pengembangan dikolaborasikan menggunakan version control seperti Github agar proses terstruktur.",
+  "main": "index.js",
+  "scripts": {
+    "frontend": "npm run dev --prefix frontend",
+    "backend": "npm run dev --prefix backend",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dap126/akucintafullstack.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/dap126/akucintafullstack/issues"
+  },
+  "homepage": "https://github.com/dap126/akucintafullstack#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
