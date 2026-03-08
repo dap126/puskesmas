@@ -20,6 +20,6 @@ Proyek ini dikembangkan bersama oleh 5 anggota:
 - **Dashboard Admin:** Laporan statistik kunjungan dan layanan Puskesmas.
 
 ## Teknologi (Tech Stack)
-- **Frontend:** HTML, CSS, JavaScript
-- **Backend:** Node.js
-- **Database:** -
+- **Frontend:** HTML, CSS, JavaScript (Vue.js)
+- **Backend:** Express (Node.js)
+- **Database:** Mysql
