@@ -13,6 +13,7 @@ import Resep from './views/Resep.vue'
 import DaftarObat from './views/Daftar-obat.vue'
 import Riwayat from './views/Riwayat-medis.vue'
 import Laporan from './views/Laporan.vue'
+import ManajemenUser from './views/Manajemen-user.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -75,6 +76,11 @@ const routes: RouteRecordRaw[] = [
     path: '/laporan',
     name: 'Laporan',
     component: Laporan,
+  },
+  {
+    path: '/manajemen-user',
+    name: 'Manajemen-user',
+    component: ManajemenUser,
   },
 ]
 

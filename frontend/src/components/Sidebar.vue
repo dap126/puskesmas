@@ -203,6 +203,15 @@ const toggleMenu = (menu: string) => {
           <span class="mx-4">Laporan</span>
         </router-link>
 
+        <!-- Menu Item: Control Admin -->
+        <router-link
+          class="flex items-center px-6 py-2 mt-4 duration-200 border-l-4"
+          :class="[$route.name === 'Manajemen-user' ? activeClass : inactiveClass]"
+          to="/manajemen-user"
+        >
+          <span class="mx-4">Manajemen User</span>
+        </router-link>
+
         <router-link
           class="flex items-center px-6 py-2 mt-4 duration-200 border-l-4"
           :class="[$route.name === 'UIElements' ? activeClass : inactiveClass]"

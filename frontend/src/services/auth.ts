@@ -54,3 +54,69 @@ export function useAuth() {
     login
   }
 }
+
+export async function registerUserAPI(username: string, nama: string, password: string, role: string) {
+  const token = localStorage.getItem('token');
+  const response = await fetch('http://localhost:5000/api/auth/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ username, nama, password, role })
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || error.message || 'Gagal mendaftarkan user');
+  }
+  return await response.json();
+}
+
+export async function getUsersAPI() {
+  const token = localStorage.getItem('token');
+  const response = await fetch('http://localhost:5000/api/auth/users', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || error.message || 'Gagal mengambil data user');
+  }
+  return await response.json();
+}
+
+export async function updateUserAPI(id: number, username: string, nama: string, role: string, password?: string) {
+  const token = localStorage.getItem('token');
+  const body: any = { username, nama, role };
+  if (password) body.password = password;
+
+  const response = await fetch(`http://localhost:5000/api/auth/users/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(body)
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || error.message || 'Gagal mengubah data user');
+  }
+  return await response.json();
+}
+
+export async function deleteUserAPI(id: number) {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`http://localhost:5000/api/auth/users/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || error.message || 'Gagal menghapus data user');
+  }
+  return await response.json();
+}
