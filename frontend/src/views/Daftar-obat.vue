@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6">
+  <div>
     <h1>Daftar Obat</h1>
   </div>
 </template>
