@@ -139,7 +139,7 @@ onMounted(() => {
               <th class="py-3 px-4 border-b text-gray-700 font-semibold">No</th>
               <th class="py-3 px-4 border-b text-gray-700 font-semibold">Username</th>
               <th class="py-3 px-4 border-b text-gray-700 font-semibold">Nama Lengkap</th>
-              <th class="py-3 px-4 border-b text-gray-700 font-semibold">Role / Jabatan</th>
+              <th class="py-3 px-4 border-b text-gray-700 font-semibold">Jabatan</th>
               <th class="py-3 px-4 border-b text-gray-700 font-semibold text-center">Aksi</th>
             </tr>
           </thead>
@@ -227,7 +227,7 @@ onMounted(() => {
             <input v-model="form.password" type="password" :required="!isEditMode" class="block w-full p-2.5 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-shadow" :placeholder="isEditMode ? '******' : ''">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Jabatan (Role)</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Jabatan</label>
             <select v-model="form.role" class="block w-full p-2.5 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-shadow">
               <option value="resepsionis">Resepsionis</option>
               <option value="dokter">Dokter</option>
