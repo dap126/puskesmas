@@ -136,11 +136,11 @@ onMounted(() => {
         <table class="min-w-full text-left border-collapse">
           <thead>
             <tr class="bg-gray-100">
-              <th class="py-3 px-4 border-b text-gray-700 font-semibold">No</th>
-              <th class="py-3 px-4 border-b text-gray-700 font-semibold">Username</th>
-              <th class="py-3 px-4 border-b text-gray-700 font-semibold">Nama Lengkap</th>
-              <th class="py-3 px-4 border-b text-gray-700 font-semibold">Jabatan</th>
-              <th class="py-3 px-4 border-b text-gray-700 font-semibold text-center">Aksi</th>
+              <th class="py-3 px-4 border-b font-semibold">No</th>
+              <th class="py-3 px-4 border-b font-semibold">Username</th>
+              <th class="py-3 px-4 border-b font-semibold">Nama Lengkap</th>
+              <th class="py-3 px-4 border-b font-semibold">Jabatan</th>
+              <th class="py-3 px-4 border-b font-semibold text-center">Aksi</th>
             </tr>
           </thead>
           <tbody>

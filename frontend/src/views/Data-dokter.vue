@@ -62,13 +62,13 @@ onMounted(() => {
         <table class="w-full text-left border-collapse">
           <thead class="bg-gray-100">
             <tr>
-              <th class="p-4 border-b font-semibold text-gray-700">
+              <th class="p-4 border-b font-semibold">
                 Nama
               </th>
-              <th class="p-4 border-b font-semibold text-gray-700">
+              <th class="p-4 border-b font-semibold">
                 Jadwal
               </th>
-              <th class="p-4 border-b font-semibold text-gray-700 text-center">
+              <th class="p-4 border-b font-semibold text-center">
                 Aksi
               </th>
             </tr>

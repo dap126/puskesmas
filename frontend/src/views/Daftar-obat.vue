@@ -34,12 +34,12 @@
       <thead class="bg-gray-100">
         <tr>
 
-          <th class="px-6 py-3 text-left text-gray-600">No</th>
-          <th class="px-6 py-3 text-left text-gray-600">Nama Obat</th>
-          <th class="px-6 py-3 text-left text-gray-600">Kategori</th>
-          <th class="px-6 py-3 text-left text-gray-600">Stok</th>
-          <th class="px-6 py-3 text-left text-gray-600">Satuan</th>
-          <th class="px-6 py-3 text-left text-gray-600">Aksi</th>
+          <th class="px-6 py-3 text-left">No</th>
+          <th class="px-6 py-3 text-left">Nama Obat</th>
+          <th class="px-6 py-3 text-left">Kategori</th>
+          <th class="px-6 py-3 text-left">Stok</th>
+          <th class="px-6 py-3 text-left">Satuan</th>
+          <th class="px-6 py-3 text-left">Aksi</th>
 
         </tr>
       </thead>
