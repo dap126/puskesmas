@@ -1,3 +1,83 @@
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import VueApexCharts from 'vue3-apexcharts';
+import { getDashboardStats } from '../services/dashboard';
+import type { ApexOptions } from 'apexcharts';
+
+const genderOptions = ref<ApexOptions>({
+  chart: {
+    type: 'pie',
+  },
+  labels: ['Laki-laki', 'Perempuan'],
+  colors: ['#3b82f6', '#ec4899'],
+  legend: {
+    position: 'bottom'
+  }
+});
+
+const genderSeries = ref([0, 0]);
+
+const ageOptions = ref<ApexOptions>({
+  chart: {
+    type: 'bar',
+    toolbar: {
+      show: false
+    }
+  },
+  xaxis: {
+    categories: ['Bayi (0-2 th)', 'Balita (3-5 th)', 'Anak-anak (6-12 th)', 'Remaja (13-17 th)', 'Dewasa (18-59 th)', 'Lansia (60+ th)']
+  },
+  colors: ['#6366f1'],
+  plotOptions: {
+    bar: {
+      borderRadius: 4,
+      horizontal: false,
+    }
+  },
+  dataLabels: {
+    enabled: false
+  }
+});
+
+const ageSeries = ref([{
+  name: 'Jumlah Pasien',
+  data: [0, 0, 0, 0, 0, 0]
+}]);
+
+onMounted(async () => {
+  try {
+    const data = await getDashboardStats();
+    
+    if (data.gender_stats) {
+      let lCount = 0;
+      let pCount = 0;
+      data.gender_stats.forEach((s: any) => {
+        if (s.jenis_kelamin === 'L') lCount = s.count;
+        if (s.jenis_kelamin === 'P') pCount = s.count;
+      });
+      genderSeries.value = [lCount, pCount];
+    }
+    
+    if (data.age_stats) {
+      const a = data.age_stats;
+      ageSeries.value = [{
+        name: 'Jumlah Pasien',
+        data: [
+          Number(a.bayi) || 0,
+          Number(a.balita) || 0,
+          Number(a.anak_anak) || 0,
+          Number(a.remaja) || 0,
+          Number(a.dewasa) || 0,
+          Number(a.lansia) || 0
+        ]
+      }];
+    }
+  } catch (err) {
+    console.error(err);
+  }
+});
+</script>
+
 <template>
   <div>
     <h3 class="text-3xl font-medium text-gray-700">
@@ -129,6 +209,34 @@
           </div>
         </div>
       </div>
+
+      <!-- Charts Section -->
+      <div class="mt-8 flex flex-wrap -mx-6">
+        <!-- Gender Chart -->
+        <div class="w-full px-6 mb-6 lg:w-1/3">
+          <div class="bg-white rounded-md shadow-sm p-6">
+            <h4 class="text-xl font-semibold text-gray-700 mb-4 text-center">
+              Distribusi Gender Pasien
+            </h4>
+            <div class="h-64 relative">
+              <VueApexCharts type="pie" height="100%" :options="genderOptions" :series="genderSeries" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Age Distribution Chart -->
+        <div class="w-full px-6 mb-6 lg:w-2/3">
+          <div class="bg-white rounded-md shadow-sm p-6">
+            <h4 class="text-xl font-semibold text-gray-700 mb-4 text-center">
+              Distribusi Umur Pasien
+            </h4>
+            <div class="h-64 relative">
+              <VueApexCharts type="bar" height="100%" :options="ageOptions" :series="ageSeries" />
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>

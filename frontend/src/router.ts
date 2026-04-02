@@ -13,6 +13,7 @@ import Resep from './views/Resep.vue'
 import DaftarObat from './views/Daftar-obat.vue'
 import Riwayat from './views/Riwayat-medis.vue'
 import Laporan from './views/Laporan.vue'
+import ManajemenUser from './views/Manajemen-user.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -76,11 +77,35 @@ const routes: RouteRecordRaw[] = [
     name: 'Laporan',
     component: Laporan,
   },
+  {
+    path: '/manajemen-user',
+    name: 'Manajemen-user',
+    component: ManajemenUser,
+  },
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+})
+
+// FRONTEND MIDDLEWARE (Satpam Pintu Depan UI)
+router.beforeEach((to, from, next) => {
+  // Mengecek apakah ada Token JWT di penyimpanan browser
+  const token = localStorage.getItem('token')
+
+  // Kalau mau masuk ke halaman yang digembok (Selain Login) TAPI tidak punya token
+  if (to.name !== 'Login' && !token) {
+    next({ name: 'Login' }) // Tendang paksa ke halaman Login
+  }
+  // Kalau sudah punya token (sudah login) TAPI iseng buka halaman login lagi
+  else if (to.name === 'Login' && token) {
+    next({ name: 'Dashboard' }) // Kembalikan ke Dashboard
+  }
+  // Kalau semuanya aman
+  else {
+    next() // Silakan lewat
+  }
 })
 
 export default router
