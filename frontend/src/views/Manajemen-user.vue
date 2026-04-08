@@ -19,6 +19,14 @@ const fetchUsers = async () => {
     daftarUser.value = data;
   } catch (error) {
     console.error(error.message);
+    pesanError.value = error.message;
+    if (error.message.includes('Token tidak valid') || error.message.includes('Token tidak ditemukan')) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 2000);
+    }
   }
 };
 
@@ -54,6 +62,13 @@ const handleSubmitUser = async () => {
     
   } catch (error) {
     pesanError.value = error.message;
+    if (error.message.includes('Token tidak valid') || error.message.includes('Token tidak ditemukan')) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 2000);
+    }
   }
 };
 
@@ -81,6 +96,13 @@ const handleHapusUser = async (id) => {
       fetchUsers();
     } catch (error) {
       pesanError.value = error.message;
+      if (error.message.includes('Token tidak valid') || error.message.includes('Token tidak ditemukan')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+      }
     }
   }
 };
