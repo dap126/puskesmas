@@ -8,23 +8,23 @@
   </div>
 
   <!-- FILTER -->
-  <div class="bg-white p-4 rounded-xl shadow mb-6 flex gap-4 flex-wrap">
+  <div class="flex flex-wrap items-center gap-4 p-4 mb-6 bg-white shadow rounded-xl">
 
     <input
       v-model="search"
       type="text"
       placeholder="Cari nama pasien..."
-      class="border px-4 py-2 rounded-lg w-64 focus:ring focus:ring-blue-200"
+      class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
     />
 
     <input
       type="date"
       v-model="tanggal"
-      class="border px-4 py-2 rounded-lg"
+      class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg shadow-sm sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500"
     />
 
     <button
-      class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+      class="w-full px-5 py-2 font-medium text-white transition-colors bg-blue-600 rounded-lg shadow-sm sm:w-auto whitespace-nowrap hover:bg-blue-500"
     >
       Cari
     </button>

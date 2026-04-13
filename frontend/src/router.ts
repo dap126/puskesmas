@@ -4,7 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Dashboard from './views/Dashboard.vue'
 import UIElements from './views/UIElements.vue'
 import Login from './views/Login.vue'
-import Pasien from './views/Pendaftaran-pasien.vue'
+import Pasien from './views/Pasien.vue'
 import Antrean from './views/Antrean.vue'
 import Dokter from './views/Data-dokter.vue'
 import Jadwal from './views/Jadwal.vue'
@@ -33,8 +33,8 @@ const routes: RouteRecordRaw[] = [
     component: UIElements,
   },
   {
-    path: '/pendaftaran-pasien',
-    name: 'Pendaftaran-pasien',
+    path: '/pasien',
+    name: 'Pasien',
     component: Pasien,
   },
   {

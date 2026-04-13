@@ -3,11 +3,7 @@ const router = express.Router();
 const db = require('../config/db');
 const { verifyToken, authorizeRoles } = require('../middleware/authMiddleware');
 
-
-// =====================================================
-// ===================== OBAT ===========================
-// =====================================================
-
+// Obat
 // GET semua obat
 router.get('/obat', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
   const sql = "SELECT * FROM obat ORDER BY id_obat DESC";
@@ -61,11 +57,7 @@ router.delete('/obat/:id', verifyToken, authorizeRoles('admin'), (req, res) => {
   });
 });
 
-
-// =====================================================
-// ================= DETAIL RESEP =======================
-// =====================================================
-
+// Detail Resep
 // GET detail resep + JOIN obat
 router.get('/detail-resep', verifyToken, authorizeRoles('admin', 'dokter', 'apoteker'), (req, res) => {
   const sql = `

@@ -4,7 +4,7 @@ const db = require('../config/db');
 const { verifyToken, authorizeRoles } = require('../middleware/authMiddleware');
 
 // GET: Lihat Semua Antrean (Biasanya untuk Admin/Poli)
-router.get('/', verifyToken, (req, res) => {
+router.get('/', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
     const sql = `
         SELECT a.*, p.nama_pasien, po.nama_poli 
         FROM antrean a
@@ -19,7 +19,7 @@ router.get('/', verifyToken, (req, res) => {
 });
 
 // POST: Buat Antrean Baru
-router.post('/', verifyToken, (req, res) => {
+router.post('/', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
     const { tgl_antrean, no_antrean, status, pasien_idpasien, poli_id_poli } = req.body;
     const sql = "INSERT INTO antrean (tgl_antrean, no_antrean, status, pasien_idpasien, poli_id_poli) VALUES (?, ?, ?, ?, ?)";
     
@@ -30,7 +30,7 @@ router.post('/', verifyToken, (req, res) => {
 });
 
 // PATCH: Update Status Antrean (Misal: Dipanggil/Selesai)
-router.patch('/:id/status', verifyToken, (req, res) => {
+router.patch('/:id/status', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
     const { status } = req.body;
     db.query("UPDATE antrean SET status = ? WHERE idantrean = ?", [status, req.params.id], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });

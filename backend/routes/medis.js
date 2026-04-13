@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
-const { verifyToken } = require('../middleware/authMiddleware');
+const { verifyToken, authorizeRoles } = require('../middleware/authMiddleware');
 
 // 1. GET: Semua Rekam Medis
-router.get('/', verifyToken, (req, res) => {
+router.get('/', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
     const sql = `
         SELECT rm.*, p.nama_pasien, d.nama_dokter 
         FROM rekam_medis rm
@@ -19,7 +19,7 @@ router.get('/', verifyToken, (req, res) => {
 });
 
 // 2. POST: Tambah Rekam Medis
-router.post('/', verifyToken, (req, res) => {
+router.post('/', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
     const { 
         tgl_periksa, keluhan, tinggi_badan, berat_bedan, 
         tekanan_darah, diagnosa, pasien_idpasien, dokter_id_dokter 
@@ -41,7 +41,7 @@ router.post('/', verifyToken, (req, res) => {
 });
 
 // 3. PUT: Update Rekam Medis
-router.put('/:id', verifyToken, (req, res) => {
+router.put('/:id', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
     const { id } = req.params;
     const { keluhan, tinggi_badan, berat_bedan, tekanan_darah, diagnosa } = req.body;
 
@@ -56,7 +56,7 @@ router.put('/:id', verifyToken, (req, res) => {
 });
 
 // 4. DELETE: Hapus Rekam Medis
-router.delete('/:id', verifyToken, (req, res) => {
+router.delete('/:id', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
     db.query("DELETE FROM rekam_medis WHERE id_rm = ?", [req.params.id], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ message: "Rekam medis berhasil dihapus" });

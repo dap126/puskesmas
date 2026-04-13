@@ -7,18 +7,18 @@
   </h3>
 
   <!-- Search + Button -->
-  <div class="flex justify-between mt-4">
+  <div class="flex flex-wrap items-center justify-between gap-4 mt-4">
 
     <input
       v-model="search"
       type="text"
       placeholder="Cari resep atau obat..."
-      class="px-4 py-2 border rounded-lg focus:outline-none focus:ring"
+      class="w-full sm:w-72 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
     />
 
     <button
       @click="openTambah"
-      class="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-500"
+      class="whitespace-nowrap px-4 py-2 font-medium text-white transition-colors bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-500"
     >
       + Tambah Resep
     </button>

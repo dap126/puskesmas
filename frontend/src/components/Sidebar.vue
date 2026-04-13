@@ -112,8 +112,8 @@ const toggleMinimize = () => {
             <!-- Accordion items -->
             <ul v-if="!isMinimized && openMenus.pendaftaran" class="mt-1 space-y-1 px-2 pt-1 border-l-2 border-gray-100 ml-3">
               <li>
-                <router-link to="/pendaftaran-pasien" :class="route.name === 'Pendaftaran-pasien' ? 'text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-900'" class="flex items-center py-2 px-3 rounded-md text-sm transition-colors">
-                  Pasien Baru
+                <router-link to="/pasien" :class="route.name === 'Pasien' ? 'text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-900'" class="flex items-center py-2 px-3 rounded-md text-sm transition-colors">
+                  Data Pasien
                 </router-link>
               </li>
               <li>
@@ -127,8 +127,8 @@ const toggleMinimize = () => {
             <ul v-if="isMinimized" class="absolute left-full top-0 ml-1 mt-0 bg-white border border-gray-200 shadow-xl rounded-md py-2 w-48 invisible group-hover:visible z-50 opacity-0 group-hover:opacity-100 transition-all">
               <li class="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Pendaftaran</li>
               <li>
-                <router-link to="/pendaftaran-pasien" class="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600">
-                  Pasien Baru
+                <router-link to="/pasien" class="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600">
+                  Data Pasien
                 </router-link>
               </li>
               <li>

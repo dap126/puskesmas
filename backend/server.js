@@ -4,6 +4,10 @@ const dotenv = require('dotenv');
 const db = require('./config/db');
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
+const antreanRoutes = require('./routes/antrean');
+const dokterRoutes = require('./routes/dokter');
+const farmasiRoutes = require('./routes/farmasi');
+const medisRoutes = require('./routes/medis');
 
 dotenv.config();
 
@@ -18,6 +22,10 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/antrean', antreanRoutes);
+app.use('/api/dokter', dokterRoutes);
+app.use('/api/farmasi', farmasiRoutes);
+app.use('/api/medis', medisRoutes);
 
 const PORT = process.env.PORT || 5000;
 

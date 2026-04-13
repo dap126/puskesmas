@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
-
-// Import Middleware Satpam yang sudah kita buat sebelumnya
 const { verifyToken } = require('../middleware/authMiddleware');
 
 // API Dashboard yang sudah digembok (hanya yang bawa Token valid yang bisa akses)
