@@ -15,6 +15,13 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Fallback to prevent crashes from undefined req.body when Content-Type is missing
+app.use((req, res, next) => {
+  req.body = req.body || {};
+  next();
+});
 
 app.get('/', (req, res) => {
   res.send('Puskesmas API is running');
@@ -27,7 +34,7 @@ app.use('/api/dokter', dokterRoutes);
 app.use('/api/farmasi', farmasiRoutes);
 app.use('/api/medis', medisRoutes);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

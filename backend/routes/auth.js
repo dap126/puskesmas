@@ -8,7 +8,7 @@ require('dotenv').config();
 const { verifyToken, authorizeRoles } = require('../middleware/authMiddleware');
 
 router.post('/login', (req, res) => {
-    const { username, password } = req.body;
+    const { username, password } = req.body || {};
     const sql = 'SELECT * FROM users WHERE username = ?';
     db.query(sql, [username], (err, result) => {
         if (err) throw err;
@@ -51,7 +51,7 @@ router.get('/users', verifyToken, authorizeRoles('admin'), (req, res) => {
 
 // API Register User Baru (HANYA ADMIN)
 router.post('/register', verifyToken, authorizeRoles('admin'), async (req, res) => {
-  const { username, nama, password, role } = req.body;
+  const { username, nama, password, role } = req.body || {};
   if (!username || !password || !role) {
     return res.status(400).json({ error: "Username, Password, dan Role harus diisi" });
   }
@@ -78,7 +78,7 @@ router.post('/register', verifyToken, authorizeRoles('admin'), async (req, res) 
 // API Edit User (HANYA ADMIN)
 router.put('/users/:id', verifyToken, authorizeRoles('admin'), async (req, res) => {
   const userId = req.params.id;
-  const { username, nama, role, password } = req.body;
+  const { username, nama, role, password } = req.body || {};
   if (!username || !role) {
     return res.status(400).json({ error: "Username dan Role harus diisi" });
   }

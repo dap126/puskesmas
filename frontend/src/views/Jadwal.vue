@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { type Poli, poliService } from '../services/poli'
+import { type Poli, poliService } from '../services/dokter'
 import { type Dokter, dokterService } from '../services/dokter'
 
 const listPoli = ref<Poli[]>([])

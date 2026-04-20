@@ -1,6 +1,6 @@
 export async function getDashboardStats() {
   const token = localStorage.getItem('token');
-  const response = await fetch(`http://localhost:5000/api/dashboard/statistik?_t=${Date.now()}`, {
+  const response = await fetch(`http://localhost:3000/api/dashboard/statistik?_t=${Date.now()}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
