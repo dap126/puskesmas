@@ -81,6 +81,7 @@ const routes: RouteRecordRaw[] = [
     path: '/manajemen-user',
     name: 'Manajemen-user',
     component: ManajemenUser,
+    meta: { requiresRole: 'admin' }
   },
 ]
 
@@ -93,19 +94,29 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   // Mengecek apakah ada Token JWT di penyimpanan browser
   const token = localStorage.getItem('token')
+  const userRole = localStorage.getItem('user_role')
 
-  // Kalau mau masuk ke halaman yang digembok (Selain Login) TAPI tidak punya token
   if (to.name !== 'Login' && !token) {
-    next({ name: 'Login' }) // Tendang paksa ke halaman Login
+    return next({ name: 'Login' })
   }
-  // Kalau sudah punya token (sudah login) TAPI iseng buka halaman login lagi
-  else if (to.name === 'Login' && token) {
-    next({ name: 'Dashboard' }) // Kembalikan ke Dashboard
+  
+  if (to.name === 'Login' && token) {
+    return next({ name: 'Dashboard' })
   }
-  // Kalau semuanya aman
-  else {
-    next() // Silakan lewat
+
+  // Pengecekan Hak Akses (Role)
+  if (to.meta.requiresRole) {
+    if (userRole !== to.meta.requiresRole) {
+      alert('Akses Ditolak! Anda tidak memiliki izin untuk membuka halaman ini.')
+      if (from.path && from.path !== '/') {
+        return next(from.path)
+      } else {
+        return next('/dashboard')
+      }
+    }
   }
+
+  next() 
 })
 
 export default router
