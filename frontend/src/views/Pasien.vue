@@ -24,11 +24,11 @@
       </thead>
       <tbody>
         <tr v-for="(p,index) in daftarPasien" :key="index">
-          <td>{{p.nama}}</td>
+          <td>{{p.nama_pasien}}</td>
           <td>{{p.nik}}</td>
-          <td>{{p.jk}}</td>
-          <td>{{p.hp}}</td>
-          <td>{{p.keluhan}}</td>
+          <td>{{p.jenis_kelamin}}</td>
+          <td>{{p.no_telpon}}</td>
+          <td>{{p.alamat}}</td>
         </tr>
         <tr v-if="daftarPasien.length === 0">
           <td colspan="5" class="py-6 text-center text-gray-500">
@@ -95,40 +95,68 @@
 </template>
 
 <script>
+import { pasienService } from '../services/pasien'
+
 export default {
   data() {
     return {
       showModal: false,
+      daftarPasien: [],
       pasien: {
-        nama: '',
+        id_pasien: 0,
         nik: '',
-        jk: '',
-        hp: '',
-        keluhan: ''
-      },
-      daftarPasien: []
+        nama_pasien: '',
+        tgl_lahir: '',
+        jenis_kelamin: '',
+        alamat: '',
+        no_telpon: ''
+      }
     }
   },
+
+  mounted() {
+    this.fetchPasien()
+  },
+
   methods: {
+    async fetchPasien() {
+      try {
+        const data = await pasienService.getAllPasien()
+        this.daftarPasien = data
+      } catch (error) {
+        console.error(error)
+      }
+    },
+
     openAddModal() {
-      this.showModal = true;
+      this.showModal = true
     },
+
     closeModal() {
-      this.showModal = false;
-      this.resetForm();
+      this.showModal = false
+      this.resetForm()
     },
+
     resetForm() {
       this.pasien = {
-        nama: '',
+        id_pasien: 0,
         nik: '',
-        jk: '',
-        hp: '',
-        keluhan: ''
-      };
+        nama_pasien: '',
+        tgl_lahir: '',
+        jenis_kelamin: '',
+        alamat: '',
+        no_telpon: ''
+      }
     },
-    tambahPasien() {
-      this.daftarPasien.push({ ...this.pasien });
-      this.closeModal();
+
+    async tambahPasien() {
+      try {
+        await pasienService.createPasien(this.pasien)
+        this.fetchPasien()
+        this.closeModal()
+      } catch (error) {
+        console.error(error)
+      }
     }
   }
 }
