@@ -1,3 +1,132 @@
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { detailresepService, type DetailResep, obatService, type Obat } from '../services/farmasi'
+
+// STATE
+const daftarDetail = ref<DetailResep[]>([])
+const daftarObat = ref<Obat[]>([])
+
+const search = ref('')
+const showModal = ref(false)
+const editMode = ref(false)
+const editId = ref<number | null>(null)
+
+// FORM
+const form = ref({
+  resep_obat_id_resep: 0,
+  obat_id_obat: '',
+  jumlah_obat: 0,
+  dosis: ''
+})
+
+// ================= GET DATA =================
+const fetchDetail = async () => {
+  try {
+    const data = await detailresepService.getAllDetailResep()
+    daftarDetail.value = data
+  } catch (error: any) {
+    console.error(error.message)
+  }
+}
+
+const fetchObat = async () => {
+  try {
+    const data = await obatService.getAllObat()
+    daftarObat.value = data
+  } catch (error: any) {
+    console.error(error.message)
+  }
+}
+
+// ================= FILTER =================
+const filteredResep = computed(() => {
+  return daftarDetail.value.filter((item) => {
+    const namaObat = getNamaObat(item.obat_id_obat).toLowerCase()
+    return (
+      namaObat.includes(search.value.toLowerCase()) ||
+      String(item.resep_obat_id_resep).includes(search.value)
+    )
+  })
+})
+
+// ================= HELPER =================
+const getNamaObat = (id: number) => {
+  const obat = daftarObat.value.find(o => o.id_obat === id)
+  return obat ? obat.nama_obat : '-'
+}
+
+// ================= MODAL =================
+const openTambah = () => {
+  editMode.value = false
+  editId.value = null
+  form.value = {
+    resep_obat_id_resep: 0,
+    obat_id_obat: '',
+    jumlah_obat: 0,
+    dosis: ''
+  }
+  showModal.value = true
+}
+
+const tutupModal = () => {
+  showModal.value = false
+}
+
+// ================= SIMPAN =================
+const simpanResep = async () => {
+  try {
+    if (editMode.value && editId.value !== null) {
+      // kalau kamu punya API update, pakai di sini
+      console.log('update belum dibuat')
+    } else {
+      await detailresepService.createDetailResep({
+        ...form.value,
+        obat_id_obat: Number(form.value.obat_id_obat)
+      } as DetailResep)
+    }
+
+    fetchDetail()
+    tutupModal()
+
+  } catch (error: any) {
+    console.error(error.message)
+  }
+}
+
+// ================= EDIT =================
+const editResep = (item: DetailResep) => {
+  editMode.value = true
+  editId.value = item.id_detail
+
+  form.value = {
+    resep_obat_id_resep: item.resep_obat_id_resep,
+    obat_id_obat: String(item.obat_id_obat),
+    jumlah_obat: item.jumlah_obat,
+    dosis: item.dosis
+  }
+
+  showModal.value = true
+}
+
+// ================= DELETE =================
+const hapusResep = async (id: number) => {
+  if (confirm('Yakin ingin menghapus?')) {
+    try {
+      await detailresepService.deleteDetailResep(id)
+      fetchDetail()
+    } catch (error: any) {
+      console.error(error.message)
+    }
+  }
+}
+
+// ================= INIT =================
+onMounted(() => {
+  fetchDetail()
+  fetchObat()
+})
+</script>
+
 <template>
 <div>
 
@@ -171,111 +300,3 @@
 
 </div>
 </template>
-
-
-<script>
-export default {
-
-data() {
-  return {
-
-    search: "",
-    showModal: false,
-    editMode: false,
-
-    form: {
-      id_detail: null,
-      resep_obat_id_resep: "",
-      obat_id_obat: "",
-      jumlah_obat: "",
-      dosis: ""
-    },
-
-    // DATA OBAT (mapping)
-    daftarObat: [
-      { id_obat: 1, nama_obat: "Paracetamol" },
-      { id_obat: 2, nama_obat: "Amoxicillin" },
-      { id_obat: 3, nama_obat: "OBH Combi" }
-    ],
-
-    // DATA RESEP
-    daftarResep: [
-      {
-        id_detail: 1,
-        resep_obat_id_resep: 101,
-        obat_id_obat: 1,
-        jumlah_obat: 10,
-        dosis: "3x1 sehari"
-      },
-      {
-        id_detail: 2,
-        resep_obat_id_resep: 102,
-        obat_id_obat: 2,
-        jumlah_obat: 5,
-        dosis: "2x1 sehari"
-      }
-    ]
-
-  }
-},
-
-computed: {
-
-  filteredResep() {
-    return this.daftarResep.filter(r =>
-      r.dosis.toLowerCase().includes(this.search.toLowerCase()) ||
-      String(r.resep_obat_id_resep).includes(this.search) ||
-      this.getNamaObat(r.obat_id_obat).toLowerCase().includes(this.search.toLowerCase())
-    )
-  }
-
-},
-
-methods: {
-
-  getNamaObat(id) {
-    const obat = this.daftarObat.find(o => o.id_obat == id)
-    return obat ? obat.nama_obat : "-"
-  },
-
-  openTambah() {
-    this.editMode = false
-    this.form = {
-      id_detail: null,
-      resep_obat_id_resep: "",
-      obat_id_obat: "",
-      jumlah_obat: "",
-      dosis: ""
-    }
-    this.showModal = true
-  },
-
-  editResep(item) {
-    this.editMode = true
-    this.form = { ...item }
-    this.showModal = true
-  },
-
-  simpanResep() {
-    if (this.editMode) {
-      const index = this.daftarResep.findIndex(r => r.id_detail === this.form.id_detail)
-      this.daftarResep[index] = { ...this.form }
-    } else {
-      this.form.id_detail = Date.now()
-      this.daftarResep.push({ ...this.form })
-    }
-    this.tutupModal()
-  },
-
-  hapusResep(id) {
-    this.daftarResep = this.daftarResep.filter(r => r.id_detail !== id)
-  },
-
-  tutupModal() {
-    this.showModal = false
-  }
-
-}
-
-}
-</script>
