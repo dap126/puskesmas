@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useSidebar } from '../composables/useSidebar'
 import { useRoute } from 'vue-router'
 
+const userRole = localStorage.getItem('user_role')
 const { isOpen } = useSidebar()
 const route = useRoute()
 const isMinimized = ref(false)
@@ -268,7 +269,7 @@ const toggleMinimize = () => {
           </li>
 
           <!-- MANAJEMEN USER -->
-          <li class="relative group">
+          <li class="relative group" v-if="userRole === 'admin'">
             <router-link to="/manajemen-user"
               :class="route.name === 'Manajemen-user' ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
               class="flex items-center p-2 rounded-lg transition-colors">
@@ -298,8 +299,6 @@ const toggleMinimize = () => {
           </li>
         </ul>
       </div>
-      
-      <!-- Footer logout -->
 
     </aside>
   </div>
