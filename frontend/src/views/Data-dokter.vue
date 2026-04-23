@@ -1,123 +1,149 @@
-<script setup lang="ts">
-import { onMounted, ref } from 'vue'
+<script setup>
+import { ref, onMounted } from 'vue'
+import { dokterService, poliService } from '../services/dokter'
 
-// Import interface dan service dari folder services
-import { dokterService } from '../services/dokter'
+const showModal = ref(false)
+const daftarPoli = ref([])
 
-const listDokter = ref<any[]>([])
-const showConfirmDialog = ref(false)
-const selectedDokterId = ref<number | null>(null)
+const pesanSukses = ref('')
+const pesanError = ref('')
 
-async function muatData() {
+const form = ref({
+  nama_dokter: '',
+  jadwal_praktik: '',
+  users_idusers: '',
+  poli_id_poli: ''
+})
+
+// ambil data poli (buat dropdown)
+const fetchPoli = async () => {
   try {
-    // Memanggil fungsi dari file dokter.ts di folder services
-    listDokter.value = await dokterService.getAllDokter()
-  }
-  catch (error) {
-    console.error('Gagal mengambil data:', error)
-    // Mock data jika API belum siap agar tidak kosong melompong
-    listDokter.value = [
-      { id_dokter: 1, nama_dokter: 'dr. Strange', jadwal_praktik: 'Malam Hari', users_idusers: 1, poli_id_poli: 1 },
-    ]
+    daftarPoli.value = await poliService.getAllPoli()
+  } catch (error) {
+    pesanError.value = error.message
   }
 }
 
-function openConfirmDialog(id: number) {
-  selectedDokterId.value = id
-  showConfirmDialog.value = true
-}
-
-async function confirmDelete() {
-  if (selectedDokterId.value !== null) {
-    await dokterService.deleteDokter(selectedDokterId.value)
-    muatData() // Refresh tabel
-    showConfirmDialog.value = false
-    selectedDokterId.value = null
+// buka modal
+const openAddModal = () => {
+  form.value = {
+    nama_dokter: '',
+    jadwal_praktik: '',
+    users_idusers: '',
+    poli_id_poli: ''
   }
+  pesanSukses.value = ''
+  pesanError.value = ''
+  showModal.value = true
 }
 
-function cancelDelete() {
-  showConfirmDialog.value = false
-  selectedDokterId.value = null
+// tutup modal
+const closeModal = () => {
+  showModal.value = false
+}
+
+// submit
+const handleSubmitDokter = async () => {
+  pesanSukses.value = ''
+  pesanError.value = ''
+
+  try {
+    await dokterService.createDokter({
+      nama_dokter: form.value.nama_dokter,
+      jadwal_praktik: form.value.jadwal_praktik,
+      users_idusers: Number(form.value.users_idusers),
+      poli_id_poli: Number(form.value.poli_id_poli)
+    })
+
+    pesanSukses.value = 'Data dokter berhasil ditambahkan'
+    closeModal()
+
+  } catch (error) {
+    pesanError.value = error.message
+  }
 }
 
 onMounted(() => {
-  muatData()
+  fetchPoli()
 })
 </script>
 
 <template>
-  <div class="p-6 bg-gray-50 min-h-screen">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">
-          Data Dokter
-        </h1>
-        <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md transition">
-          + Tambah Dokter
+  <!-- tombol -->
+  <button 
+    @click="openAddModal"
+    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+  >
+    Tambah Dokter
+  </button>
+
+  <!-- modal -->
+  <div 
+    v-if="showModal"
+    class="fixed inset-0 flex items-center justify-center bg-black/40 z-50"
+  >
+    <div class="bg-white w-full max-w-md p-6 rounded-2xl shadow-xl">
+
+      <h2 class="text-lg font-semibold mb-4">Tambah Dokter</h2>
+
+      <div class="space-y-3">
+        <input 
+          v-model="form.nama_dokter"
+          placeholder="Nama Dokter"
+          class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+        />
+
+        <input 
+          v-model="form.jadwal_praktik"
+          placeholder="Jadwal Praktik"
+          class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+        />
+
+        <input 
+          v-model="form.users_idusers"
+          type="number"
+          placeholder="ID User"
+          class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+        />
+
+        <select 
+          v-model="form.poli_id_poli"
+          class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+        >
+          <option disabled value="">Pilih Poli</option>
+          <option 
+            v-for="poli in daftarPoli"
+            :key="poli.id_poli"
+            :value="poli.id_poli"
+          >
+            {{ poli.nama_poli }}
+          </option>
+        </select>
+      </div>
+
+      <div class="flex justify-end gap-2 mt-5">
+        <button 
+          @click="closeModal"
+          class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+        >
+          Batal
+        </button>
+
+        <button 
+          @click="handleSubmitDokter"
+          class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+        >
+          Simpan
         </button>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
-        <table class="w-full text-left border-collapse">
-          <thead class="bg-gray-100">
-            <tr>
-              <th class="p-4 border-b font-semibold">
-                Nama
-              </th>
-              <th class="p-4 border-b font-semibold">
-                Jadwal
-              </th>
-              <th class="p-4 border-b font-semibold text-center">
-                Aksi
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="doc in listDokter" :key="doc.id_dokter" class="hover:bg-gray-50 transition">
-              <td class="p-4 border-b">
-                {{ doc.nama_dokter }}
-              </td>
-              <td class="p-4 border-b text-sm text-gray-600">
-                {{ doc.jadwal_praktik }}
-              </td>
-              <td class="p-4 border-b text-center">
-                <button class="text-blue-600 hover:underline mr-3">
-                  Edit
-                </button>
-                <button class="text-red-500 hover:underline" @click="openConfirmDialog(doc.id_dokter!)">
-                  Hapus
-                </button>
-              </td>
-            </tr>
-            <tr v-if="listDokter.length === 0">
-              <td colspan="3" class="p-8 text-center text-gray-400">
-                Data tidak ditemukan atau sedang memuat...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <p v-if="pesanSukses" class="text-green-600 mt-3 text-sm">
+        {{ pesanSukses }}
+      </p>
+      <p v-if="pesanError" class="text-red-600 mt-3 text-sm">
+        {{ pesanError }}
+      </p>
 
-      <!-- Confirmation Dialog -->
-      <div v-if="showConfirmDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm">
-          <h2 class="text-lg font-bold text-gray-800 mb-4">
-            Konfirmasi Penghapusan
-          </h2>
-          <p class="text-gray-600 mb-6">
-            Apakah Anda yakin ingin menghapus data dokter ini?
-          </p>
-          <div class="flex justify-end gap-3">
-            <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md transition" @click="cancelDelete">
-              Batal
-            </button>
-            <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition" @click="confirmDelete">
-              Hapus
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>

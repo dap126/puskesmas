@@ -40,4 +40,13 @@ export const poliService = {
     const response = await axios.get(API_URL_POLI)
     return response.data
   },
+  // Tambah POLI
+  async createPoli(data: Poli): Promise<void> {
+    await axios.post(API_URL_POLI, data)
+  },
+
+  // Hapus POLI
+  async deletePoli(id: number): Promise<void> {
+    await axios.delete(`${API_URL_POLI}/${id}`)
+  },
 }
