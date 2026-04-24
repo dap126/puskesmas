@@ -4,7 +4,7 @@ export interface medis {
     tgl_periksa : number
     keluhan : string
     tinggi_badan : number
-    berat_badan : number
+    berat_bedan : number
     tekanan_darah : number
     diagnosa : string
     pasien_idpasien : string

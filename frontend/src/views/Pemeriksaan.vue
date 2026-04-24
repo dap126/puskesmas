@@ -13,37 +13,47 @@
     </h2>
 
     <div class="grid grid-cols-3 gap-4">
-
-      <div>
-        <label class="text-sm text-gray-600">Nama Pasien</label>
+      <div class="col-span-3 sm:col-span-1 relative">
+        <label class="text-sm text-gray-600">Pilih Pasien</label>
         <input
-          type="text"
-          class="w-full border rounded-lg p-2 mt-1 bg-gray-100"
-          :value="pasien.nama"
-          readonly
-        >
+          v-model="searchPasien"
+          @input="onInputPasien"
+          placeholder="Cari nama pasien..."
+          class="w-full border rounded-lg p-2 mt-1 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <ul v-if="showPasienDropdown" class="absolute z-10 w-full bg-white border border-gray-200 mt-1 max-h-48 overflow-y-auto rounded-lg shadow-lg">
+          <li v-if="filteredPasien.length === 0" class="p-2 text-gray-500 text-sm">Tidak ditemukan</li>
+          <li 
+            v-for="p in filteredPasien" 
+            :key="p.idpasien"
+            @click="selectPasien(p)"
+            class="p-2 hover:bg-blue-50 cursor-pointer text-sm"
+          >
+            {{ p.nama_pasien }} (NIK: {{ p.nik }})
+          </li>
+        </ul>
       </div>
 
-      <div>
-        <label class="text-sm text-gray-600">NIK</label>
+      <div class="col-span-3 sm:col-span-2 relative">
+        <label class="text-sm text-gray-600">Pilih Dokter Pemeriksa</label>
         <input
-          type="text"
-          class="w-full border rounded-lg p-2 mt-1 bg-gray-100"
-          :value="pasien.nik"
-          readonly
-        >
+          v-model="searchDokter"
+          @input="onInputDokter"
+          placeholder="Cari nama dokter..."
+          class="w-full border rounded-lg p-2 mt-1 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <ul v-if="showDokterDropdown" class="absolute z-10 w-full bg-white border border-gray-200 mt-1 max-h-48 overflow-y-auto rounded-lg shadow-lg">
+          <li v-if="filteredDokter.length === 0" class="p-2 text-gray-500 text-sm">Tidak ditemukan</li>
+          <li 
+            v-for="d in filteredDokter" 
+            :key="d.id_dokter"
+            @click="selectDokter(d)"
+            class="p-2 hover:bg-blue-50 cursor-pointer text-sm"
+          >
+            {{ d.nama_dokter }}
+          </li>
+        </ul>
       </div>
-
-      <div>
-        <label class="text-sm text-gray-600">Jenis Kelamin</label>
-        <input
-          type="text"
-          class="w-full border rounded-lg p-2 mt-1 bg-gray-100"
-          :value="pasien.jk"
-          readonly
-        >
-      </div>
-
     </div>
   </div>
 
@@ -79,7 +89,7 @@
         <input
           type="number"
           class="w-full border rounded-lg p-2 mt-1"
-          v-model="form.berat_badan"
+          v-model="form.berat_bedan"
         >
       </div>
 
@@ -137,10 +147,10 @@
               <option disabled value="">Pilih Obat</option>
               <option
                 v-for="o in obatList"
-                :key="o.id"
-                :value="o.id"
+                :key="o.id_obat"
+                :value="o.id_obat"
               >
-                {{ o.nama }}
+                {{ o.nama_obat }}
               </option>
             </select>
           </td>
@@ -202,56 +212,153 @@
 
 
 
-<script>
-export default {
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { obatService, type Obat } from '../services/farmasi'
+import { pasienService, type Pasien } from '../services/pasien'
+import { medisService } from '../services/medis'
+import { dokterService, type Dokter } from '../services/dokter'
 
-data(){
-  return{
+const route = useRoute()
+const router = useRouter()
 
-    pasien:{
-      nama:"Ahmad Fauzi",
-      nik:"720112xxx",
-      jk:"L"
-    },
+const form = ref({
+  keluhan: "",
+  tinggi_badan: "",
+  berat_bedan: "",
+  tekanan_darah: "",
+  diagnosa: "",
+  pasien_idpasien: "" as number | string,
+  dokter_id_dokter: "" as number | string
+})
 
-    form:{
-      keluhan:"",
-      tinggi_badan:"",
-      berat_badan:"",
-      tekanan_darah:"",
-      diagnosa:""
-    },
+const resep = ref<any[]>([])
+const obatList = ref<Obat[]>([])
+const pasienList = ref<Pasien[]>([])
+const dokterList = ref<Dokter[]>([])
 
-    resep:[],
+// Search States
+const searchPasien = ref("")
+const searchDokter = ref("")
+const filteredPasien = ref<Pasien[]>([])
+const filteredDokter = ref<Dokter[]>([])
+const showPasienDropdown = ref(false)
+const showDokterDropdown = ref(false)
 
-    obatList:[
-      {id:1,nama:"Paracetamol"},
-      {id:2,nama:"Amoxicillin"},
-      {id:3,nama:"Vitamin C"}
-    ]
+let debounceTimerPasien: any = null
+let debounceTimerDokter: any = null
 
+function onInputPasien() {
+  clearTimeout(debounceTimerPasien)
+  if (!searchPasien.value) {
+    showPasienDropdown.value = false
+    return
   }
-},
+  debounceTimerPasien = setTimeout(() => {
+    filteredPasien.value = pasienList.value.filter(p => 
+      p.nama_pasien.toLowerCase().includes(searchPasien.value.toLowerCase()) ||
+      (p.nik ? p.nik.toString().includes(searchPasien.value) : false)
+    )
+    showPasienDropdown.value = true
+  }, 1000) // delay 1 detik
+}
 
-methods:{
+function selectPasien(p: Pasien) {
+  form.value.pasien_idpasien = p.idpasien ?? ''
+  searchPasien.value = `${p.nama_pasien} (NIK: ${p.nik ?? ''})`
+  showPasienDropdown.value = false
+}
 
-  tambahObat(){
-    this.resep.push({
-      obat:"",
-      jumlah:"",
-      dosis:""
-    })
-  },
-
-  hapusObat(index){
-    this.resep.splice(index,1)
-  },
-
-  simpan(){
-    console.log(this.form)
-    console.log(this.resep)
+function onInputDokter() {
+  clearTimeout(debounceTimerDokter)
+  if (!searchDokter.value) {
+    showDokterDropdown.value = false
+    return
   }
+  debounceTimerDokter = setTimeout(() => {
+    filteredDokter.value = dokterList.value.filter(d => 
+      d.nama_dokter.toLowerCase().includes(searchDokter.value.toLowerCase())
+    )
+    showDokterDropdown.value = true
+  }, 1000) // delay 1 detik
+}
 
+function selectDokter(d: Dokter) {
+  form.value.dokter_id_dokter = d.id_dokter ?? ''
+  searchDokter.value = d.nama_dokter
+  showDokterDropdown.value = false
 }
+
+async function fetchData() {
+  try {
+    const [obatData, pasienData, dokterData] = await Promise.all([
+      obatService.getAllObat(),
+      pasienService.getAllPasien(),
+      dokterService.getAllDokter()
+    ])
+    obatList.value = obatData
+    pasienList.value = pasienData
+    dokterList.value = dokterData
+
+    // Auto-fill pasien dari parameter route
+    if (route.query.idpasien && route.query.nama) {
+      form.value.pasien_idpasien = Number(route.query.idpasien)
+      searchPasien.value = route.query.nama as string
+    } else if (route.query.idpasien) {
+      const p = pasienData.find((x: Pasien) => x.idpasien === Number(route.query.idpasien))
+      if (p) {
+        form.value.pasien_idpasien = p.idpasien ?? ''
+        searchPasien.value = `${p.nama_pasien} (NIK: ${p.nik ?? ''})`
+      }
+    }
+  } catch (error) {
+    console.error('Gagal mengambil data', error)
+  }
 }
+
+function tambahObat() {
+  resep.value.push({
+    obat: "",
+    jumlah: "",
+    dosis: ""
+  })
+}
+
+function hapusObat(index: number) {
+  resep.value.splice(index, 1)
+}
+
+async function simpan() {
+  try {
+    const payload = {
+      tgl_periksa: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      keluhan: form.value.keluhan,
+      tinggi_badan: Number(form.value.tinggi_badan),
+      berat_bedan: Number(form.value.berat_bedan),
+      tekanan_darah: Number(form.value.tekanan_darah),
+      diagnosa: form.value.diagnosa,
+      pasien_idpasien: form.value.pasien_idpasien,
+      dokter_id_dokter: form.value.dokter_id_dokter
+    }
+    
+    // Simpan data medis
+    await medisService.createMedis(payload as any)
+    
+    // (Jika ada API untuk menyimpan array resep sekaligus, bisa dipanggil di sini)
+    if (resep.value.length > 0) {
+      console.log('Menyimpan Resep (Belum diimplementasikan ke backend):', resep.value)
+    }
+
+    alert('Pemeriksaan berhasil disimpan!')
+    router.push('/riwayat-medis')
+  } catch (error) {
+    console.error('Gagal menyimpan pemeriksaan', error)
+    alert('Terjadi kesalahan saat menyimpan pemeriksaan.')
+  }
+}
+
+onMounted(() => {
+  fetchData()
+})
 </script>

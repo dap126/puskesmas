@@ -13,7 +13,8 @@ import Resep from './views/Resep.vue'
 import DaftarObat from './views/Daftar-obat.vue'
 import Riwayat from './views/Riwayat-medis.vue'
 import Laporan from './views/Laporan.vue'
-import ManajemenUser from './views/Manajemen-user.vue'
+import ManajemenUserPage from './views/manajemen/user.vue'
+import ManajemenDokterPage from './views/manajemen/dokter.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -78,9 +79,15 @@ const routes: RouteRecordRaw[] = [
     component: Laporan,
   },
   {
-    path: '/manajemen-user',
-    name: 'Manajemen-user',
-    component: ManajemenUser,
+    path: '/manajemen/user',
+    name: 'Manajemen-user-page',
+    component: ManajemenUserPage,
+    meta: { requiresRole: 'admin' }
+  },
+  {
+    path: '/manajemen/dokter',
+    name: 'Manajemen-dokter-page',
+    component: ManajemenDokterPage,
     meta: { requiresRole: 'admin' }
   },
 ]

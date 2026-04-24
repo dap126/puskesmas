@@ -21,7 +21,7 @@ router.post('/', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', '
     const { nama_dokter, jadwal_praktik, users_idusers, poli_id_poli } = req.body;
     const sql = "INSERT INTO dokter (nama_dokter, jadwal_praktik, users_idusers, poli_id_poli) VALUES (?, ?, ?, ?)";
     
-    db.query(sql, [nama_dokter, jadwal_praktik, users_idusers, poli_id_poli], (err, result) => {
+    db.query(sql, [nama_dokter, jadwal_praktik, users_idusers || null, poli_id_poli], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ message: "Data dokter berhasil ditambahkan", id: result.insertId });
     });
@@ -57,7 +57,7 @@ router.get('/poli', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter'
     });
 });
 
-router.post('/poli', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
+router.post('/poli', verifyToken, authorizeRoles('admin'), (req, res) => {
     const { nama_poli } = req.body;
     const sql = "INSERT INTO poli (nama_poli) VALUES (?)";
     
@@ -67,13 +67,25 @@ router.post('/poli', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter
     });
 });
 
-router.delete('/poli/:id', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
+router.delete('/poli/:id', verifyToken, authorizeRoles('admin'), (req, res) => {
     const { id } = req.params;
     const sql = "DELETE FROM poli WHERE id_poli = ?";
     
     db.query(sql, [id], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ message: "Poli berhasil dihapus" });
+    });
+});
+
+// 5. PATCH: Link dokter ke akun user
+router.patch('/:id/link-user', verifyToken, authorizeRoles('admin'), (req, res) => {
+    const { id } = req.params;
+    const { users_idusers } = req.body;
+    const sql = "UPDATE dokter SET users_idusers = ? WHERE id_dokter = ?";
+    
+    db.query(sql, [users_idusers, id], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: "Dokter berhasil dihubungkan ke akun user" });
     });
 });
 

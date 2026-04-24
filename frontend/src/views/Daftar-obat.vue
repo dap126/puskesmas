@@ -1,5 +1,5 @@
 <template>
-<div>
+<div class="p-6 bg-gray-50 min-h-screen">
 
   <!-- Judul -->
   <h3 class="text-3xl font-medium text-gray-700">
@@ -109,69 +109,70 @@
 
 
   <!-- MODAL FORM -->
-  <div
-    v-if="showModal"
-    class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40"
-  >
-
-    <div class="w-96 p-6 bg-white rounded-lg shadow-lg">
-
-      <h3 class="mb-4 text-xl font-semibold">
-
-        {{ editMode ? "Edit Obat" : "Tambah Obat" }}
-
-      </h3>
-
-
-      <input
-        v-model="form.nama_obat"
-        type="text"
-        placeholder="Nama Obat"
-        class="w-full px-3 py-2 mb-3 border rounded"
-      />
-
-      <input
-        v-model="form.kategori"
-        type="text"
-        placeholder="Kategori"
-        class="w-full px-3 py-2 mb-3 border rounded"
-      />
-
-      <input
-        v-model="form.stok"
-        type="number"
-        placeholder="Stok"
-        class="w-full px-3 py-2 mb-3 border rounded"
-      />
-
-      <input
-        v-model="form.satuan"
-        type="text"
-        placeholder="Satuan (Tablet/Botol)"
-        class="w-full px-3 py-2 mb-4 border rounded"
-      />
-
-
-      <div class="flex justify-end gap-2">
-
-        <button
-          @click="tutupModal"
-          class="px-4 py-2 bg-gray-300 rounded"
-        >
-          Batal
+  <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+    <div class="bg-white p-7 rounded-2xl shadow-2xl w-full max-w-xl">
+      <div class="flex justify-between items-center border-b border-gray-100 pb-4 mb-5">
+        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+          {{ editMode ? "Edit Obat" : "Tambah Obat Baru" }}
+        </h3>
+        <button @click="tutupModal" class="text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50 p-1.5 rounded-full transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
-
-        <button
-          @click="simpanObat"
-          class="px-4 py-2 text-white bg-indigo-600 rounded"
-        >
-          Simpan
-        </button>
-
       </div>
 
-    </div>
+      <form @submit.prevent="simpanObat" class="grid grid-cols-2 gap-5">
+        <div class="flex flex-col col-span-2">
+          <label class="mb-1.5 font-semibold text-gray-700 text-sm">Nama Obat</label>
+          <input
+            v-model="form.nama_obat"
+            type="text"
+            placeholder="Masukkan Nama Obat"
+            required
+            class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
+          />
+        </div>
 
+        <div class="flex flex-col col-span-2 sm:col-span-1">
+          <label class="mb-1.5 font-semibold text-gray-700 text-sm">Kategori</label>
+          <input
+            v-model="form.kategori"
+            type="text"
+            placeholder="Masukkan Kategori"
+            required
+            class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
+          />
+        </div>
+
+        <div class="flex flex-col col-span-2 sm:col-span-1">
+          <label class="mb-1.5 font-semibold text-gray-700 text-sm">Stok</label>
+          <input
+            v-model="form.stok"
+            type="number"
+            placeholder="Jumlah Stok"
+            required
+            class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
+          />
+        </div>
+
+        <div class="flex flex-col col-span-2">
+          <label class="mb-1.5 font-semibold text-gray-700 text-sm">Satuan</label>
+          <input
+            v-model="form.satuan"
+            type="text"
+            placeholder="Tablet/Botol/dll"
+            required
+            class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
+          />
+        </div>
+
+        <div class="col-span-2 flex justify-end gap-3 mt-4 pt-5 border-t border-gray-100">
+          <button type="button" @click="tutupModal" class="bg-white text-gray-600 px-6 py-2.5 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition">Batal</button>
+          <button type="submit" class="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition">Simpan</button>
+        </div>
+      </form>
+    </div>
   </div>
 
 </div>
@@ -179,150 +180,93 @@
 
 
 
-<script>
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { obatService, type Obat } from '../services/farmasi'
 
-export default {
+const search = ref('')
+const showModal = ref(false)
+const editMode = ref(false)
+const daftarObat = ref<Obat[]>([])
 
-data(){
+const form = ref<Obat>({
+  id_obat: undefined,
+  nama_obat: '',
+  kategori: '',
+  stok: 0,
+  satuan: ''
+})
 
-return{
+const filteredObat = computed(() => {
+  return daftarObat.value.filter(o =>
+    o.nama_obat.toLowerCase().includes(search.value.toLowerCase())
+  )
+})
 
-search:"",
-
-showModal:false,
-
-editMode:false,
-
-form:{
-id_obat:null,
-nama_obat:"",
-kategori:"",
-stok:"",
-satuan:""
-},
-
-daftarObat:[
-
-{
-id_obat:1,
-nama_obat:"Paracetamol",
-kategori:"Antipiretik",
-stok:120,
-satuan:"Tablet"
-},
-
-{
-id_obat:2,
-nama_obat:"Amoxicillin",
-kategori:"Antibiotik",
-stok:80,
-satuan:"Kapsul"
-},
-
-{
-id_obat:3,
-nama_obat:"OBH Combi",
-kategori:"Obat Batuk",
-stok:50,
-satuan:"Botol"
+async function fetchObat() {
+  try {
+    const data = await obatService.getAllObat()
+    daftarObat.value = data
+  } catch (error) {
+    console.error('Gagal mengambil data obat', error)
+  }
 }
 
-]
-
+function openTambah() {
+  editMode.value = false
+  form.value = {
+    id_obat: undefined,
+    nama_obat: '',
+    kategori: '',
+    stok: 0,
+    satuan: ''
+  }
+  showModal.value = true
 }
 
-},
-
-
-
-computed:{
-
-filteredObat(){
-
-return this.daftarObat.filter(o =>
-o.nama_obat.toLowerCase().includes(this.search.toLowerCase())
-)
-
+function editObat(obat: Obat) {
+  editMode.value = true
+  form.value = { ...obat }
+  showModal.value = true
 }
 
-},
-
-
-
-methods:{
-
-
-
-openTambah(){
-
-this.editMode=false
-
-this.form={
-id_obat:null,
-nama_obat:"",
-kategori:"",
-stok:"",
-satuan:""
+async function simpanObat() {
+  try {
+    if (editMode.value && form.value.id_obat) {
+      // Not implemented in backend yet, just placeholder
+      console.log('Update not implemented in backend')
+    } else {
+      await obatService.createObat({
+        nama_obat: form.value.nama_obat,
+        kategori: form.value.kategori,
+        stok: form.value.stok,
+        satuan: form.value.satuan
+      })
+    }
+    fetchObat()
+    tutupModal()
+  } catch (error) {
+    console.error('Gagal menyimpan obat:', error)
+  }
 }
 
-this.showModal=true
-
-},
-
-
-
-editObat(obat){
-
-this.editMode=true
-
-this.form={...obat}
-
-this.showModal=true
-
-},
-
-
-
-simpanObat(){
-
-if(this.editMode){
-
-const index=this.daftarObat.findIndex(o=>o.id_obat===this.form.id_obat)
-
-this.daftarObat[index]={...this.form}
-
+async function hapusObat(id: number | undefined) {
+  if (!id) return
+  if (confirm('Yakin ingin menghapus obat ini?')) {
+    try {
+      await obatService.deleteObat(id)
+      fetchObat()
+    } catch (error) {
+      console.error('Gagal menghapus obat:', error)
+    }
+  }
 }
 
-else{
-
-this.form.id_obat=Date.now()
-
-this.daftarObat.push({...this.form})
-
+function tutupModal() {
+  showModal.value = false
 }
 
-this.tutupModal()
-
-},
-
-
-
-hapusObat(id){
-
-this.daftarObat=this.daftarObat.filter(o=>o.id_obat!==id)
-
-},
-
-
-
-tutupModal(){
-
-this.showModal=false
-
-}
-
-}
-
-}
-
+onMounted(() => {
+  fetchObat()
+})
 </script>

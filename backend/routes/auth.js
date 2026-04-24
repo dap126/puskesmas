@@ -68,7 +68,7 @@ router.post('/register', verifyToken, authorizeRoles('admin'), async (req, res) 
         }
         return res.status(500).json({ error: "Gagal menyimpan user" });
       }
-      res.status(201).json({ message: "User berhasil didaftarkan" });
+      res.status(201).json({ message: "User berhasil didaftarkan", id: result.insertId });
     });
   } catch (error) {
     res.status(500).json({ error: "Terjadi kesalahan server" });

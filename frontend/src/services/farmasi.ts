@@ -29,9 +29,8 @@ export const obatService = {
   },
 }
 
-/* ================= DETAIL RESEP ================= */
 export interface DetailResep {
-  id_detail?: number // ✅ FIX: optional
+  id_detail?: number
   jumlah_obat: number
   dosis: string
   resep_obat_id_resep: number

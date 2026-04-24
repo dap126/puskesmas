@@ -13,6 +13,7 @@ const openMenus = ref<Record<string, boolean>>({
   medis: false,
   farmasi: false,
   informasi: false,
+  manajemen: false,
 })
 
 const toggleMenu = (menu: string) => {
@@ -119,7 +120,7 @@ const toggleMinimize = () => {
               </li>
               <li>
                 <router-link to="/antrean" :class="route.name === 'Antrean' ? 'text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-900'" class="flex items-center py-2 px-3 rounded-md text-sm transition-colors">
-                  Antrean Hari Ini
+                  Daftar Antrean
                 </router-link>
               </li>
             </ul>
@@ -134,7 +135,7 @@ const toggleMinimize = () => {
               </li>
               <li>
                 <router-link to="/antrean" class="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600">
-                  Antrean Hari Ini
+                  Daftar Antrean
                 </router-link>
               </li>
             </ul>
@@ -192,7 +193,7 @@ const toggleMinimize = () => {
             <ul v-if="!isMinimized && openMenus.farmasi" class="mt-1 space-y-1 px-2 pt-1 border-l-2 border-gray-100 ml-3">
               <li>
                 <router-link to="/resep" :class="route.name === 'Resep' ? 'text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-900'" class="flex items-center py-2 px-3 rounded-md text-sm transition-colors">
-                  Antrean Resep
+                  Daftar Resep
                 </router-link>
               </li>
               <li>
@@ -268,19 +269,42 @@ const toggleMinimize = () => {
             </div>
           </li>
 
-          <!-- MANAJEMEN USER -->
+          <!-- MANAJEMEN (Dropdown) -->
           <li class="relative group" v-if="userRole === 'admin'">
-            <router-link to="/manajemen-user"
-              :class="route.name === 'Manajemen-user' ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
-              class="flex items-center p-2 rounded-lg transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="flex-shrink-0 w-5 h-5" :class="route.name === 'Manajemen-user' ? 'text-blue-700' : 'text-gray-500 group-hover:text-gray-900'">
+            <button @click="toggleMenu('manajemen')"
+              :class="(openMenus.manajemen && !isMinimized) ? 'bg-gray-50 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'"
+              class="flex items-center w-full p-2 rounded-lg transition-colors focus:outline-none">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="flex-shrink-0 w-5 h-5 text-gray-500">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
               </svg>
-              <span v-if="!isMinimized" class="ml-3 whitespace-nowrap font-medium">Manajemen User</span>
-            </router-link>
-            <div v-if="isMinimized" class="absolute left-full top-0 ml-2 z-50 invisible group-hover:visible bg-gray-800 text-white text-sm rounded py-1 px-3 shadow-lg whitespace-nowrap">
-              <span>Manajemen User</span>
-            </div>
+              <span v-if="!isMinimized" class="ml-3 font-medium whitespace-nowrap">Manajemen</span>
+              <svg v-if="!isMinimized" :class="{'rotate-180': openMenus.manajemen}" class="w-4 h-4 ml-auto transition-transform" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <!-- Accordion items -->
+            <ul v-if="!isMinimized && openMenus.manajemen" class="mt-1 space-y-1 px-2 pt-1 border-l-2 border-gray-100 ml-3">
+              <li>
+                <router-link to="/manajemen/user" :class="route.name === 'Manajemen-user-page' ? 'text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-900'" class="flex items-center py-2 px-3 rounded-md text-sm transition-colors">
+                  Kelola User
+                </router-link>
+              </li>
+              <li>
+                <router-link to="/manajemen/dokter" :class="route.name === 'Manajemen-dokter-page' ? 'text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-900'" class="flex items-center py-2 px-3 rounded-md text-sm transition-colors">
+                  Kelola Dokter
+                </router-link>
+              </li>
+            </ul>
+            <!-- Flyout items for Minimized -->
+            <ul v-if="isMinimized" class="absolute left-full top-0 ml-1 mt-0 bg-white border border-gray-200 shadow-xl rounded-md py-2 w-48 invisible group-hover:visible z-50 opacity-0 group-hover:opacity-100 transition-all">
+              <li class="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Manajemen</li>
+              <li>
+                <router-link to="/manajemen/user" class="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600">Kelola User</router-link>
+              </li>
+              <li>
+                <router-link to="/manajemen/dokter" class="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600">Kelola Dokter</router-link>
+              </li>
+            </ul>
           </li>
 
           <!-- UI ELEMENTS -->

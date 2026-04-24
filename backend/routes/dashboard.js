@@ -23,11 +23,20 @@ router.get('/statistik', verifyToken, async (req, res) => {
       FROM pasien
     `);
 
+    const [totalPasienRes] = await db.promise().query(`SELECT COUNT(*) as count FROM pasien`);
+    const total_pasien = totalPasienRes[0].count;
+
+    const [totalAntreanRes] = await db.promise().query(`SELECT COUNT(*) as count FROM antrean WHERE DATE(tgl_antrean) = CURDATE()`);
+    const total_antrean = totalAntreanRes[0].count;
+
+    const [totalStaffRes] = await db.promise().query(`SELECT COUNT(*) as count FROM users WHERE role IN ('dokter', 'apoteker')`);
+    const total_staff = totalStaffRes[0].count;
+
     res.json({
       message: "Berhasil mengambil statistik Dashboard",
-      // Data dummy sementara
-      total_pasien: 8282,
-      total_antrean: 215542,
+      total_pasien: total_pasien,
+      total_antrean: total_antrean,
+      total_staff: total_staff,
       gender_stats: genderStats,
       age_stats: ageStats[0]
     });

@@ -2,147 +2,65 @@
 import { ref, onMounted } from 'vue'
 import { dokterService, poliService } from '../services/dokter'
 
-const showModal = ref(false)
 const daftarPoli = ref([])
+const listDokter = ref([])
 
-const pesanSukses = ref('')
-const pesanError = ref('')
-
-const form = ref({
-  nama_dokter: '',
-  jadwal_praktik: '',
-  users_idusers: '',
-  poli_id_poli: ''
-})
-
-// ambil data poli (buat dropdown)
 const fetchPoli = async () => {
   try {
     daftarPoli.value = await poliService.getAllPoli()
   } catch (error) {
-    pesanError.value = error.message
+    console.error('Gagal mengambil data poli', error)
   }
 }
 
-// buka modal
-const openAddModal = () => {
-  form.value = {
-    nama_dokter: '',
-    jadwal_praktik: '',
-    users_idusers: '',
-    poli_id_poli: ''
-  }
-  pesanSukses.value = ''
-  pesanError.value = ''
-  showModal.value = true
-}
-
-// tutup modal
-const closeModal = () => {
-  showModal.value = false
-}
-
-// submit
-const handleSubmitDokter = async () => {
-  pesanSukses.value = ''
-  pesanError.value = ''
-
+const fetchDokter = async () => {
   try {
-    await dokterService.createDokter({
-      nama_dokter: form.value.nama_dokter,
-      jadwal_praktik: form.value.jadwal_praktik,
-      users_idusers: Number(form.value.users_idusers),
-      poli_id_poli: Number(form.value.poli_id_poli)
-    })
-
-    pesanSukses.value = 'Data dokter berhasil ditambahkan'
-    closeModal()
-
+    listDokter.value = await dokterService.getAllDokter()
   } catch (error) {
-    pesanError.value = error.message
+    console.error(error)
   }
 }
 
 onMounted(() => {
   fetchPoli()
+  fetchDokter()
 })
 </script>
 
 <template>
-  <!-- tombol -->
-  <button 
-    @click="openAddModal"
-    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-  >
-    Tambah Dokter
-  </button>
-
-  <!-- modal -->
-  <div 
-    v-if="showModal"
-    class="fixed inset-0 flex items-center justify-center bg-black/40 z-50"
-  >
-    <div class="bg-white w-full max-w-md p-6 rounded-2xl shadow-xl">
-
-      <h2 class="text-lg font-semibold mb-4">Tambah Dokter</h2>
-
-      <div class="space-y-3">
-        <input 
-          v-model="form.nama_dokter"
-          placeholder="Nama Dokter"
-          class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
-        />
-
-        <input 
-          v-model="form.jadwal_praktik"
-          placeholder="Jadwal Praktik"
-          class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
-        />
-
-        <input 
-          v-model="form.users_idusers"
-          type="number"
-          placeholder="ID User"
-          class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
-        />
-
-        <select 
-          v-model="form.poli_id_poli"
-          class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
-        >
-          <option disabled value="">Pilih Poli</option>
-          <option 
-            v-for="poli in daftarPoli"
-            :key="poli.id_poli"
-            :value="poli.id_poli"
-          >
-            {{ poli.nama_poli }}
-          </option>
-        </select>
+  <div class="p-6 bg-gray-50 min-h-screen">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">
+          Data Dokter
+        </h1>
       </div>
 
-      <div class="flex justify-end gap-2 mt-5">
-        <button 
-          @click="closeModal"
-          class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
-        >
-          Batal
-        </button>
-
-        <button 
-          @click="handleSubmitDokter"
-          class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-        >
-          Simpan
-        </button>
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+        <table class="w-full text-left border-collapse">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-5 py-4 font-semibold text-gray-600">No</th>
+              <th class="px-5 py-4 font-semibold text-gray-600">Nama Dokter</th>
+              <th class="px-5 py-4 font-semibold text-gray-600">Poli</th>
+              <th class="px-5 py-4 font-semibold text-gray-600">Jadwal Praktik</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(doc, index) in listDokter" :key="doc.id_dokter" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
+              <td class="px-5 py-4 text-gray-600">{{ index + 1 }}</td>
+              <td class="px-5 py-4 text-gray-800 font-medium">{{ doc.nama_dokter }}</td>
+              <td class="px-5 py-4 text-gray-600">{{ doc.nama_poli || '-' }}</td>
+              <td class="px-5 py-4 text-gray-600 text-sm">{{ doc.jadwal_praktik }}</td>
+            </tr>
+            <tr v-if="listDokter.length === 0">
+              <td colspan="4" class="py-12 text-center text-gray-400">
+                Data tidak ditemukan atau sedang memuat...
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-
-      <p v-if="pesanSukses" class="text-green-600 mt-3 text-sm">
-        {{ pesanSukses }}
-      </p>
-      <p v-if="pesanError" class="text-red-600 mt-3 text-sm">
-        {{ pesanError }}
-      </p>
 
     </div>
   </div>

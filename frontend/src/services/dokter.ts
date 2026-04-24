@@ -4,7 +4,10 @@ import axios from 'axios'
 export interface Dokter {
   id_dokter?: number
   nama_dokter: string
+  nip: number
+  no_hp: number
   jadwal_praktik: string
+  status: string
   users_idusers: number
   poli_id_poli: number
 }
@@ -26,6 +29,11 @@ export const dokterService = {
   // Hapus dokter
   async deleteDokter(id: number): Promise<void> {
     await axios.delete(`${API_URL_DOKTER}/${id}`)
+  },
+
+  // Link dokter ke akun user
+  async linkDokterToUser(idDokter: number, idUser: number): Promise<void> {
+    await axios.patch(`${API_URL_DOKTER}/${idDokter}/link-user`, { users_idusers: idUser })
   },
 }
 

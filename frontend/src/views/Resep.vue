@@ -96,7 +96,7 @@ const simpanResep = async () => {
 // ================= EDIT =================
 const editResep = (item: DetailResep) => {
   editMode.value = true
-  editId.value = item.id_detail
+  editId.value = item.id_detail ?? null
 
   form.value = {
     resep_obat_id_resep: item.resep_obat_id_resep,
@@ -128,11 +128,11 @@ onMounted(() => {
 </script>
 
 <template>
-<div>
+<div class="p-6 bg-gray-50 min-h-screen">
 
   <!-- Judul -->
-  <h3 class="text-3xl font-medium text-gray-700">
-    Antrean Resep
+  <h3 class="text-3xl font-medium text-gray-700 mb-6">
+    Daftar Resep
   </h3>
 
   <!-- Search + Button -->
@@ -212,7 +212,7 @@ onMounted(() => {
             </button>
 
             <button
-              @click="hapusResep(item.id_detail)"
+              @click="item.id_detail && hapusResep(item.id_detail)"
               class="px-3 py-1 text-white bg-red-500 rounded hover:bg-red-400"
             >
               Hapus
@@ -229,73 +229,78 @@ onMounted(() => {
 
 
   <!-- MODAL -->
-  <div
-    v-if="showModal"
-    class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40"
-  >
-
-    <div class="w-96 p-6 bg-white rounded-lg shadow">
-
-      <h3 class="mb-4 text-xl font-semibold">
-        {{ editMode ? "Edit Resep" : "Tambah Resep" }}
-      </h3>
-
-      <input
-        v-model="form.resep_obat_id_resep"
-        type="number"
-        placeholder="ID Resep"
-        class="w-full px-3 py-2 mb-3 border rounded"
-      />
-
-      <!-- Dropdown Obat -->
-      <select
-        v-model="form.obat_id_obat"
-        class="w-full px-3 py-2 mb-3 border rounded"
-      >
-        <option disabled value="">Pilih Obat</option>
-        <option
-          v-for="o in daftarObat"
-          :key="o.id_obat"
-          :value="o.id_obat"
-        >
-          {{ o.nama_obat }}
-        </option>
-      </select>
-
-      <input
-        v-model="form.jumlah_obat"
-        type="number"
-        placeholder="Jumlah Obat"
-        class="w-full px-3 py-2 mb-3 border rounded"
-      />
-
-      <input
-        v-model="form.dosis"
-        type="text"
-        placeholder="Dosis"
-        class="w-full px-3 py-2 mb-4 border rounded"
-      />
-
-      <div class="flex justify-end gap-2">
-
-        <button
-          @click="tutupModal"
-          class="px-4 py-2 bg-gray-300 rounded"
-        >
-          Batal
+  <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+    <div class="bg-white p-7 rounded-2xl shadow-2xl w-full max-w-xl">
+      <div class="flex justify-between items-center border-b border-gray-100 pb-4 mb-5">
+        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+          {{ editMode ? "Edit Resep" : "Tambah Resep Baru" }}
+        </h3>
+        <button @click="tutupModal" class="text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50 p-1.5 rounded-full transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
-
-        <button
-          @click="simpanResep"
-          class="px-4 py-2 text-white bg-indigo-600 rounded"
-        >
-          Simpan
-        </button>
-
       </div>
 
-    </div>
+      <form @submit.prevent="simpanResep" class="grid grid-cols-2 gap-5">
+        <div class="flex flex-col col-span-2 sm:col-span-1">
+          <label class="mb-1.5 font-semibold text-gray-700 text-sm">ID Resep</label>
+          <input
+            v-model="form.resep_obat_id_resep"
+            type="number"
+            placeholder="Masukkan ID Resep"
+            required
+            class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
+          />
+        </div>
 
+        <!-- Dropdown Obat -->
+        <div class="flex flex-col col-span-2 sm:col-span-1">
+          <label class="mb-1.5 font-semibold text-gray-700 text-sm">Obat</label>
+          <select
+            v-model="form.obat_id_obat"
+            required
+            class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
+          >
+            <option disabled value="">Pilih Obat</option>
+            <option
+              v-for="o in daftarObat"
+              :key="o.id_obat"
+              :value="o.id_obat"
+            >
+              {{ o.nama_obat }}
+            </option>
+          </select>
+        </div>
+
+        <div class="flex flex-col col-span-2 sm:col-span-1">
+          <label class="mb-1.5 font-semibold text-gray-700 text-sm">Jumlah Obat</label>
+          <input
+            v-model="form.jumlah_obat"
+            type="number"
+            placeholder="Masukkan Jumlah"
+            required
+            class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
+          />
+        </div>
+
+        <div class="flex flex-col col-span-2 sm:col-span-1">
+          <label class="mb-1.5 font-semibold text-gray-700 text-sm">Dosis</label>
+          <input
+            v-model="form.dosis"
+            type="text"
+            placeholder="Contoh: 3 x 1 hari"
+            required
+            class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
+          />
+        </div>
+
+        <div class="col-span-2 flex justify-end gap-3 mt-4 pt-5 border-t border-gray-100">
+          <button type="button" @click="tutupModal" class="bg-white text-gray-600 px-6 py-2.5 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition">Batal</button>
+          <button type="submit" class="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition">Simpan</button>
+        </div>
+      </form>
+    </div>
   </div>
 
 </div>

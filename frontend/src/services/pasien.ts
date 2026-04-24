@@ -2,13 +2,15 @@ import axios from "axios";
 
 // Pasien
 export interface Pasien{
-    id_pasein : number
-    nik : number
-    nama_pasien : string
-    tgl_lahir : number
-    jenis_kelamin : number
-    alamat : string
-    no_telpon : string
+    idpasien?: number
+    nik?: number
+    no_rm?: string
+    nama_pasien: string
+    tgl_lahir: number | string
+    jenis_kelamin: string
+    alamat?: string
+    no_telpon?: string
+    no_telepon?: string
 }
 const API_URL_PASIEN = 'http://localhost:3000/api/pasien'
 
@@ -61,4 +63,9 @@ export const antreanService = {
   async deleteAntrean(id: number): Promise<void> {
     await axios.delete(`${API_URL_ANTREAN}/${id}`)
   },
+
+  // Update Status
+  async updateStatus(id: number, status: string): Promise<void> {
+    await axios.patch(`${API_URL_ANTREAN}/${id}/status`, { status })
+  }
 }

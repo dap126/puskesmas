@@ -34,6 +34,9 @@ export function useAuth() {
       // Save token to localStorage 
       localStorage.setItem('token', data.token)
       
+      // Save user role for router guard
+      localStorage.setItem('user_role', data.user.role)
+
       // Save user info just in case
       localStorage.setItem('user', JSON.stringify(data.user))
       

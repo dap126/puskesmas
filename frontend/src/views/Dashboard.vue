@@ -16,6 +16,9 @@ const genderOptions = ref<ApexOptions>({
 });
 
 const genderSeries = ref([0, 0]);
+const totalPasien = ref(0);
+const totalStaff = ref(0);
+const totalAntrean = ref(0);
 
 const ageOptions = ref<ApexOptions>({
   chart: {
@@ -47,6 +50,10 @@ const ageSeries = ref([{
 onMounted(async () => {
   try {
     const data = await getDashboardStats();
+    
+    totalPasien.value = data.total_pasien || 0;
+    totalStaff.value = data.total_staff || 0;
+    totalAntrean.value = data.total_antrean || 0;
     
     if (data.gender_stats) {
       let lCount = 0;
@@ -126,7 +133,7 @@ onMounted(async () => {
 
             <div class="mx-5">
               <h4 class="text-2xl font-semibold text-gray-700">
-                8,282
+                {{ totalPasien }}
               </h4>
               <div class="text-gray-500">
                 Jumlah Pasien
@@ -163,7 +170,7 @@ onMounted(async () => {
 
             <div class="mx-5">
               <h4 class="text-2xl font-semibold text-gray-700">
-                200,521
+                {{ totalStaff }}
               </h4>
               <div class="text-gray-500">
                 Dokter & Apoteker
@@ -200,7 +207,7 @@ onMounted(async () => {
 
             <div class="mx-5">
               <h4 class="text-2xl font-semibold text-gray-700">
-                215,542
+                {{ totalAntrean }}
               </h4>
               <div class="text-gray-500">
                 Antrean Hari Ini
