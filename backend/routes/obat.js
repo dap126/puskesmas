@@ -5,7 +5,7 @@ const { verifyToken, authorizeRoles } = require('../middleware/authMiddleware');
 
 // Obat
 // GET semua obat
-router.get('/obat', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
+router.get('/obat', verifyToken, authorizeRoles('admin', 'staff', 'dokter'), (req, res) => {
   const sql = "SELECT * FROM obat ORDER BY id_obat DESC";
 
   db.query(sql, (err, results) => {
@@ -15,7 +15,7 @@ router.get('/obat', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter'
 });
 
 // POST tambah obat
-router.post('/obat', verifyToken, authorizeRoles('admin', 'apoteker'), (req, res) => {
+router.post('/obat', verifyToken, authorizeRoles('admin', 'staff'), (req, res) => {
   const { nama_obat, kategori, stok, satuan } = req.body;
 
   const sql = "INSERT INTO obat (nama_obat, kategori, stok, satuan) VALUES (?, ?, ?, ?)";
@@ -31,7 +31,7 @@ router.post('/obat', verifyToken, authorizeRoles('admin', 'apoteker'), (req, res
 });
 
 // PUT update obat
-router.put('/obat/:id', verifyToken, authorizeRoles('admin', 'apoteker'), (req, res) => {
+router.put('/obat/:id', verifyToken, authorizeRoles('admin', 'staff'), (req, res) => {
   const { id } = req.params;
   const { nama_obat, kategori, stok, satuan } = req.body;
 
@@ -48,7 +48,7 @@ router.put('/obat/:id', verifyToken, authorizeRoles('admin', 'apoteker'), (req, 
 });
 
 // DELETE obat
-router.delete('/obat/:id', verifyToken, authorizeRoles('admin', 'apoteker'), (req, res) => {
+router.delete('/obat/:id', verifyToken, authorizeRoles('admin', 'staff'), (req, res) => {
   const { id } = req.params;
 
   db.query("DELETE FROM obat WHERE id_obat=?", [id], (err) => {

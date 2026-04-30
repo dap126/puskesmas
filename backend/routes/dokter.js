@@ -4,7 +4,7 @@ const db = require('../config/db');
 const { verifyToken, authorizeRoles } = require('../middleware/authMiddleware');
 
 // 1. READ: Ambil semua data dokter (dengan JOIN Poli)
-router.get('/', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
+router.get('/', verifyToken, authorizeRoles('admin', 'staff', 'dokter'), (req, res) => {
     const sql = `
         SELECT dokter.*, poli.nama_poli 
         FROM dokter 
@@ -17,7 +17,7 @@ router.get('/', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'a
 });
 
 // 2. CREATE: Tambah dokter baru
-router.post('/', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
+router.post('/', verifyToken, authorizeRoles('admin', 'staff', 'dokter'), (req, res) => {
     const { nama_dokter, jadwal_praktik, users_idusers, poli_id_poli } = req.body;
     const sql = "INSERT INTO dokter (nama_dokter, jadwal_praktik, users_idusers, poli_id_poli) VALUES (?, ?, ?, ?)";
     
@@ -28,7 +28,7 @@ router.post('/', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', '
 });
 
 // 3. UPDATE: Ubah data dokter
-router.put('/:id', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
+router.put('/:id', verifyToken, authorizeRoles('admin', 'staff', 'dokter'), (req, res) => {
     const { id } = req.params;
     const { nama_dokter, jadwal_praktik, poli_id_poli } = req.body;
     const sql = "UPDATE dokter SET nama_dokter = ?, jadwal_praktik = ?, poli_id_poli = ? WHERE id_dokter = ?";
@@ -40,7 +40,7 @@ router.put('/:id', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter',
 });
 
 // 4. DELETE: Hapus dokter
-router.delete('/:id', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
+router.delete('/:id', verifyToken, authorizeRoles('admin', 'staff', 'dokter'), (req, res) => {
     const { id } = req.params;
     const sql = "DELETE FROM dokter WHERE id_dokter = ?";
     
@@ -50,7 +50,7 @@ router.delete('/:id', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokte
     });
 });
 
-router.get('/poli', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
+router.get('/poli', verifyToken, authorizeRoles('admin', 'staff', 'dokter'), (req, res) => {
     db.query("SELECT * FROM poli", (err, results) => {
         if (err) return res.status(500).json(err);
         res.json(results);

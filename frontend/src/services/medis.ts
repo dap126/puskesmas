@@ -4,8 +4,8 @@ export interface medis {
     tgl_periksa : number
     keluhan : string
     tinggi_badan : number
-    berat_bedan : number
-    tekanan_darah : number
+    berat_badan : number
+    tekanan_darah : string
     diagnosa : string
     pasien_idpasien : string
     dokter_id_dokter : string
@@ -22,8 +22,9 @@ export const medisService = {
   },
 
   // Tambah data medis baru
-  async createMedis(data: medis): Promise<void> {
-    await axios.post(API_URL_MEDIS, data)
+  async createMedis(data: medis): Promise<any> {
+    const response = await axios.post(API_URL_MEDIS, data)
+    return response.data
   },
 
   // Hapus data medis
@@ -49,6 +50,12 @@ export const resepService = {
   // Tambah data resep baru
   async createResep(data: resep): Promise<void> {
     await axios.post(API_URL_RESEP, data)
+  },
+
+  // Tambah resep menggunakan database transaction (banyak obat sekaligus)
+  async createResepTransaction(payload: { rekam_medis_id_rm: number, daftar_obat: any[] }): Promise<any> {
+    const response = await axios.post(API_URL_RESEP, payload)
+    return response.data
   },
 
   // Hapus data resep

@@ -35,12 +35,8 @@ router.post('/login', (req, res) => {
     });
 });
 
-// Pastikan authorizeRoles sudah di-import di bagian atas file bersama verifyToken
-// (Sudah di-import di atas)
-
 // API Ambil Daftar User (HANYA ADMIN)
 router.get('/users', verifyToken, authorizeRoles('admin'), (req, res) => {
-  // Hanya ambil id, username, nama, dan role, tanpa role 'admin'. Urutkan dari yang terbaru.
   const sql = "SELECT idusers, username, nama, role FROM users WHERE role != 'admin' ORDER BY idusers DESC";
   
   db.query(sql, (err, results) => {

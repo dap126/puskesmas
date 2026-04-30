@@ -89,7 +89,7 @@
         <input
           type="number"
           class="w-full border rounded-lg p-2 mt-1"
-          v-model="form.berat_bedan"
+          v-model="form.berat_badan"
         >
       </div>
 
@@ -217,7 +217,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { obatService, type Obat } from '../services/farmasi'
 import { pasienService, type Pasien } from '../services/pasien'
-import { medisService } from '../services/medis'
+import { medisService, resepService } from '../services/medis'
 import { dokterService, type Dokter } from '../services/dokter'
 
 const route = useRoute()
@@ -226,7 +226,7 @@ const router = useRouter()
 const form = ref({
   keluhan: "",
   tinggi_badan: "",
-  berat_bedan: "",
+  berat_badan: "",
   tekanan_darah: "",
   diagnosa: "",
   pasien_idpasien: "" as number | string,
@@ -331,27 +331,54 @@ function hapusObat(index: number) {
 
 async function simpan() {
   try {
+    // Validasi input
+    if (!form.value.pasien_idpasien) {
+      alert('Silakan pilih pasien dari dropdown!')
+      return
+    }
+    if (!form.value.dokter_id_dokter) {
+      alert('Silakan pilih dokter pemeriksa dari dropdown!')
+      return
+    }
+    if (!form.value.keluhan) {
+      alert('Keluhan wajib diisi!')
+      return
+    }
+
     const payload = {
       tgl_periksa: new Date().toISOString().slice(0, 19).replace('T', ' '),
       keluhan: form.value.keluhan,
-      tinggi_badan: Number(form.value.tinggi_badan),
-      berat_bedan: Number(form.value.berat_bedan),
-      tekanan_darah: Number(form.value.tekanan_darah),
+      tinggi_badan: Number(form.value.tinggi_badan) || 0,
+      berat_badan: form.value.berat_badan ? Number(form.value.berat_badan) : null,
+      tekanan_darah: form.value.tekanan_darah, // Kirim sebagai string (contoh: 120/80)
       diagnosa: form.value.diagnosa,
-      pasien_idpasien: form.value.pasien_idpasien,
-      dokter_id_dokter: form.value.dokter_id_dokter
+      pasien_idpasien: Number(form.value.pasien_idpasien),
+      dokter_id_dokter: Number(form.value.dokter_id_dokter)
     }
     
-    // Simpan data medis
-    await medisService.createMedis(payload as any)
+    // Simpan data medis dan ambil ID
+    const medisResult = await medisService.createMedis(payload as any)
+    const newRmId = medisResult.id
     
-    // (Jika ada API untuk menyimpan array resep sekaligus, bisa dipanggil di sini)
+    // Jika ada obat yang diresepkan, simpan secara transaksional
     if (resep.value.length > 0) {
-      console.log('Menyimpan Resep (Belum diimplementasikan ke backend):', resep.value)
+      const daftarObat = resep.value.map(item => ({
+        obat_id_obat: Number(item.obat),
+        jumlah_obat: Number(item.jumlah),
+        dosis: item.dosis
+      }))
+      
+      await resepService.createResepTransaction({
+        rekam_medis_id_rm: newRmId,
+        daftar_obat: daftarObat
+      })
+      
+      alert('Pemeriksaan & Resep Obat berhasil disimpan!')
+      router.push('/resep') // Tampilkan hasil transaksi pada halaman Resep
+    } else {
+      alert('Pemeriksaan berhasil disimpan!')
+      router.push('/riwayat-medis')
     }
-
-    alert('Pemeriksaan berhasil disimpan!')
-    router.push('/riwayat-medis')
   } catch (error) {
     console.error('Gagal menyimpan pemeriksaan', error)
     alert('Terjadi kesalahan saat menyimpan pemeriksaan.')

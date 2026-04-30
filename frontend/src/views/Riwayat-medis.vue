@@ -28,8 +28,8 @@ const fetchRiwayat = async () => {
         id: item.id_rm,
         tanggal: formattedDate,
         rawTanggal: tgl,
-        pasien: item.pasien_idpasien || '-',
-        dokter: item.dokter_id_dokter || '-',
+        pasien: item.nama_pasien || '-',
+        dokter: item.nama_dokter || '-',
         keluhan: item.keluhan,
         diagnosa: item.diagnosa,
         tinggi_badan: item.tinggi_badan,
@@ -104,8 +104,8 @@ onMounted(() => {
       <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
         <tr>
           <th class="p-4">Tanggal</th>
-          <th class="p-4">Pasien</th>
-          <th class="p-4">Dokter</th>
+          <th class="p-4">Nama Pasien</th>
+          <th class="p-4">Nama Dokter</th>
           <th class="p-4">Keluhan</th>
           <th class="p-4">Diagnosa</th>
           <th class="p-4">Aksi</th>
@@ -150,11 +150,11 @@ onMounted(() => {
       
       <div class="space-y-3 text-sm bg-gray-50 p-4 rounded-xl border border-gray-100">
         <div class="grid grid-cols-2 gap-2 border-b pb-2">
-          <p class="text-gray-500">Pasien</p>
+          <p class="text-gray-500">Nama Pasien</p>
           <p class="font-semibold text-right">{{ detail.pasien }}</p>
         </div>
         <div class="grid grid-cols-2 gap-2 border-b pb-2">
-          <p class="text-gray-500">Dokter</p>
+          <p class="text-gray-500">Nama Dokter</p>
           <p class="font-semibold text-right">{{ detail.dokter }}</p>
         </div>
         <div class="grid grid-cols-2 gap-2 border-b pb-2">

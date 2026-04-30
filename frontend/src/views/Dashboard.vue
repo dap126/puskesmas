@@ -173,7 +173,7 @@ onMounted(async () => {
                 {{ totalStaff }}
               </h4>
               <div class="text-gray-500">
-                Dokter & Apoteker
+                Dokter & Staff
               </div>
             </div>
           </div>

@@ -124,14 +124,14 @@ onMounted(() => {
       </div>
 
       <!-- Alert Sukses -->
-      <div v-if="pesanSukses" class="mb-4">
+      <div v-if="pesanSukses && !showModal && !showConfirmDialog" class="mb-4">
         <p class="text-emerald-600 text-sm font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">
           {{ pesanSukses }}
         </p>
       </div>
 
       <!-- Alert Error -->
-      <div v-if="pesanError" class="mb-4">
+      <div v-if="pesanError && !showModal && !showConfirmDialog" class="mb-4">
         <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
           {{ pesanError }}
         </p>

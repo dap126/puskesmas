@@ -29,7 +29,7 @@ router.get('/statistik', verifyToken, async (req, res) => {
     const [totalAntreanRes] = await db.promise().query(`SELECT COUNT(*) as count FROM antrean WHERE DATE(tgl_antrean) = CURDATE()`);
     const total_antrean = totalAntreanRes[0].count;
 
-    const [totalStaffRes] = await db.promise().query(`SELECT COUNT(*) as count FROM users WHERE role IN ('dokter', 'apoteker')`);
+    const [totalStaffRes] = await db.promise().query(`SELECT COUNT(*) as count FROM users WHERE role IN ('dokter', 'staff')`);
     const total_staff = totalStaffRes[0].count;
 
     res.json({

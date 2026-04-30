@@ -33,7 +33,7 @@
   },
   {
     "Field": "role",
-    "Type": "enum('admin','resepsionis','dokter','apoteker')",
+    "Type": "enum('admin','staff','dokter')",
     "Null": "NO",
     "Key": "",
     "Default": null,

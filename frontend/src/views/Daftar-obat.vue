@@ -123,6 +123,13 @@
       </div>
 
       <form @submit.prevent="simpanObat" class="grid grid-cols-2 gap-5">
+        <!-- Alert Error di dalam Modal -->
+        <div v-if="pesanError" class="col-span-2">
+          <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
+            {{ pesanError }}
+          </p>
+        </div>
+
         <div class="flex flex-col col-span-2">
           <label class="mb-1.5 font-semibold text-gray-700 text-sm">Nama Obat</label>
           <input
@@ -188,6 +195,7 @@ const search = ref('')
 const showModal = ref(false)
 const editMode = ref(false)
 const daftarObat = ref<Obat[]>([])
+const pesanError = ref('')
 
 const form = ref<Obat>({
   id_obat: undefined,
@@ -221,16 +229,19 @@ function openTambah() {
     stok: 0,
     satuan: ''
   }
+  pesanError.value = ''
   showModal.value = true
 }
 
 function editObat(obat: Obat) {
   editMode.value = true
   form.value = { ...obat }
+  pesanError.value = ''
   showModal.value = true
 }
 
 async function simpanObat() {
+  pesanError.value = ''
   try {
     if (editMode.value && form.value.id_obat) {
       // Not implemented in backend yet, just placeholder
@@ -245,8 +256,9 @@ async function simpanObat() {
     }
     fetchObat()
     tutupModal()
-  } catch (error) {
+  } catch (error: any) {
     console.error('Gagal menyimpan obat:', error)
+    pesanError.value = error.message || 'Gagal menyimpan obat. Silakan coba lagi.'
   }
 }
 

@@ -3,7 +3,7 @@ import { ref, onMounted, watch } from 'vue';
 import { registerUserAPI, getUsersAPI, updateUserAPI, deleteUserAPI } from '../../services/auth';
 import { dokterService } from '../../services/dokter';
 
-const form = ref({ username: '', nama: '', password: '', role: 'resepsionis' });
+const form = ref({ username: '', nama: '', password: '', role: 'staff' });
 const pesanSukses = ref('');
 const pesanError = ref('');
 const daftarUser = ref([]);
@@ -42,7 +42,7 @@ const fetchUsers = async () => {
 const openAddModal = () => {
   isEditMode.value = false;
   editUserId.value = null;
-  form.value = { username: '', nama: '', password: '', role: 'resepsionis' };
+  form.value = { username: '', nama: '', password: '', role: '' };
   selectedDokterId.value = '';
   pesanSukses.value = '';
   pesanError.value = '';
@@ -187,14 +187,14 @@ onMounted(() => {
       </div>
 
     <!-- Alert Sukses -->
-    <div v-if="pesanSukses" class="mb-4">
+    <div v-if="pesanSukses && !showModal && !showConfirmDialog" class="mb-4">
       <p class="text-emerald-600 text-sm font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">
         {{ pesanSukses }}
       </p>
     </div>
 
     <!-- Alert Error -->
-    <div v-if="pesanError" class="mb-4">
+    <div v-if="pesanError && !showModal && !showConfirmDialog" class="mb-4">
       <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
         {{ pesanError }}
       </p>
@@ -222,8 +222,7 @@ onMounted(() => {
                   class="px-3 py-1 text-xs font-semibold rounded-full uppercase tracking-wide"
                   :class="{
                     'bg-blue-100 text-blue-700': user.role === 'dokter',
-                    'bg-green-100 text-green-700': user.role === 'apoteker',
-                    'bg-yellow-100 text-yellow-700': user.role === 'resepsionis',
+                    'bg-green-100 text-green-700': user.role === 'staff',
                     'bg-purple-100 text-purple-700': user.role === 'admin'
                   }"
                 >
@@ -286,6 +285,13 @@ onMounted(() => {
         </div>
         
         <form @submit.prevent="handleSubmitUser" class="grid grid-cols-2 gap-5">
+          <!-- Alert Error di dalam Modal -->
+          <div v-if="pesanError" class="col-span-2">
+            <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
+              {{ pesanError }}
+            </p>
+          </div>
+
           <div class="flex flex-col col-span-2 sm:col-span-1">
             <label class="mb-1.5 font-semibold text-gray-700 text-sm">Username</label>
             <input v-model="form.username" type="text" placeholder="Masukkan Username" required class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none">
@@ -308,9 +314,8 @@ onMounted(() => {
             <label class="mb-1.5 font-semibold text-gray-700 text-sm">Jabatan</label>
             <select v-model="form.role" class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none bg-white">
               <option value="" disabled>--</option>
-              <option value="resepsionis">Resepsionis</option>
+              <option value="staff">Staff</option>
               <option value="dokter">Dokter</option>
-              <option value="apoteker">Apoteker</option>
             </select>
           </div>
 

@@ -10,7 +10,7 @@ export interface Obat {
 }
 
 const API_URL_OBAT = 'http://localhost:3000/api/obat'
-const API_URL_DETAILRESEP = 'http://localhost:3000/api/detailresep'
+const API_URL_DETAILRESEP = 'http://localhost:3000/api/detail-resep'
 
 export const obatService = {
   async getAllObat(): Promise<Obat[]> {
@@ -35,6 +35,7 @@ export interface DetailResep {
   dosis: string
   resep_obat_id_resep: number
   obat_id_obat: number
+  nama_obat: string
 }
 
 export const detailresepService = {
@@ -43,7 +44,7 @@ export const detailresepService = {
     return response.data
   },
 
-  async createDetailResep(data: DetailResep) {
+  async createDetailResep(data: { obat_id: number, jumlah_obat: number, dosis: string }) {
     const response = await axios.post(API_URL_DETAILRESEP, data)
     return response.data
   },

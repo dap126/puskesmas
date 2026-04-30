@@ -21,15 +21,6 @@ async function loadInitialData() {
   }
   catch (error) {
     console.error('Gagal memuat data jadwal:', error)
-    // Mock Data untuk preview jika API belum jalan
-    listPoli.value = [
-      { id_poli: 1, nama_poli: 'Poli Umum' },
-      { id_poli: 2, nama_poli: 'Poli Gigi' },
-    ]
-    allDokter.value = [
-      { id_dokter: 1, nama_dokter: 'dr. Linda Agistina', jadwal_praktik: 'Senin - Rabu (08:00 - 12:00)', poli_id_poli: 1, users_idusers: 1 },
-      { id_dokter: 2, nama_dokter: 'dr. Handani', jadwal_praktik: 'Kamis - Sabtu (13:00 - 17:00)', poli_id_poli: 2, users_idusers: 2 },
-    ]
   }
   finally {
     loading.value = false

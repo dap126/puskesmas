@@ -67,5 +67,11 @@ export const antreanService = {
   // Update Status
   async updateStatus(id: number, status: string): Promise<void> {
     await axios.patch(`${API_URL_ANTREAN}/${id}/status`, { status })
+  },
+
+  // Reset Antrean Hari Ini
+  async resetAntrean(): Promise<any> {
+    const response = await axios.delete(`${API_URL_ANTREAN}/reset`)
+    return response.data
   }
 }

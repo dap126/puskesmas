@@ -198,7 +198,7 @@ CREATE TABLE `rekam_medis` (
   `tgl_periksa` datetime NOT NULL,
   `keluhan` text NOT NULL,
   `tinggi_badan` int NOT NULL,
-  `berat_bedan` int DEFAULT NULL,
+  `berat_badan` int DEFAULT NULL,
   `tekanan_darah` varchar(20) DEFAULT NULL,
   `diagnosa` text,
   `pasien_idpasien` int NOT NULL,
@@ -229,7 +229,7 @@ CREATE TABLE `users` (
   `username` varchar(50) NOT NULL,
   `nama` varchar(255) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
-  `role` enum('admin','resepsionis','dokter','apoteker') NOT NULL
+  `role` enum('admin','staff','dokter') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 --
@@ -239,7 +239,7 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`idusers`, `username`, `nama`, `password`, `role`) VALUES
 (1, 'admin', NULL, '$2b$10$J0aC32UtxGLsEWX0FwugL.npzHNUe9zaXO6t0oie3Rnl1e/W9coQ.', 'admin'),
 (2, 'agus', 'Dr. Agus', '$2b$10$5BzqN6nTuSAVxSew2BsI9ul8chsjRuuFevy1vIVNWSG6WMb4hj/Oy', 'dokter'),
-(3, 'budi', 'Budiono Siregar', '$2b$10$.mKG5y3juuEJ7MjBRjmrjeB0stxyOcIy5/5vgoxn/ziBPKrX/LwbW', 'apoteker');
+(3, 'budi', 'Budiono Siregar', '$2b$10$.mKG5y3juuEJ7MjBRjmrjeB0stxyOcIy5/5vgoxn/ziBPKrX/LwbW', 'staff');
 
 --
 -- Indexes for dumped tables

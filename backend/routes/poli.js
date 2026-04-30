@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../config/db');
 const { verifyToken, authorizeRoles } = require('../middleware/authMiddleware');
 
-router.get('/poli', verifyToken, authorizeRoles('admin', 'resepsionis', 'dokter', 'apoteker'), (req, res) => {
+router.get('/poli', verifyToken, authorizeRoles('admin', 'staff', 'dokter'), (req, res) => {
     db.query("SELECT * FROM poli", (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(results);
