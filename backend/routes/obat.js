@@ -3,7 +3,6 @@ const router = express.Router();
 const db = require('../config/db');
 const { verifyToken, authorizeRoles } = require('../middleware/authMiddleware');
 
-// Obat
 // GET semua obat
 router.get('/obat', verifyToken, authorizeRoles('admin', 'staff', 'dokter'), (req, res) => {
   const sql = "SELECT * FROM obat ORDER BY id_obat DESC";

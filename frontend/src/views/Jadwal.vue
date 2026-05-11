@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { type Poli, poliService } from '../services/dokter'
-import { type Dokter, dokterService } from '../services/dokter'
+import { computed, onMounted, ref } from 'vue'
+import { type Dokter, type Poli, dokterService, poliService } from '../services/dokter'
 
 const listPoli = ref<Poli[]>([])
 const allDokter = ref<Dokter[]>([])
@@ -10,7 +9,6 @@ const loading = ref(true)
 async function loadInitialData() {
   try {
     loading.value = true
-    // Mengambil data Poli dan Dokter secara bersamaan
     const [dataPoli, dataDokter] = await Promise.all([
       poliService.getAllPoli(),
       dokterService.getAllDokter(),
@@ -27,27 +25,37 @@ async function loadInitialData() {
   }
 }
 
-// Fungsi filter dokter berdasarkan ID Poli
-function getDokterByPoli(poliId: number) {
-  return allDokter.value.filter((d: Dokter) => d.poli_id_poli === poliId)
-}
-
 onMounted(() => {
   loadInitialData()
 })
+
+const currentPage = ref(1)
+const itemsPerPage = 10
+
+const totalPages = computed(() => Math.ceil(allDokter.value.length / itemsPerPage))
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  return allDokter.value.slice(start, start + itemsPerPage)
+})
+
+function prevPage() {
+  if (currentPage.value > 1)
+    currentPage.value--
+}
+function nextPage() {
+  if (currentPage.value < totalPages.value)
+    currentPage.value++
+}
 </script>
 
 <template>
-  <div class="p-6 bg-gray-50 min-h-screen">
-    <div class="max-w-6xl mx-auto">
-      <header class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">
+  <div class="max-w-6xl mx-auto mt-10 p-4 relative">
+    <div class="w-full bg-white p-6 border rounded-lg shadow-md">
+      <div class="flex justify-between items-center mb-4 border-b pb-4">
+        <h3 class="text-xl font-semibold text-gray-800">
           Jadwal Praktik Poli
-        </h1>
-        <p class="text-gray-600">
-          Daftar poli dan jadwal operasional dokter
-        </p>
-      </header>
+        </h3>
+      </div>
 
       <div v-if="loading" class="text-center py-10">
         <p class="animate-pulse text-blue-600">
@@ -55,38 +63,40 @@ onMounted(() => {
         </p>
       </div>
 
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div
-          v-for="item in listPoli"
-          :key="item.id_poli"
-          class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition"
-        >
-          <div class="bg-blue-600 p-4">
-            <h2 class="text-white font-bold text-lg uppercase flex items-center">
-              <span class="mr-2">🏥</span> {{ item.nama_poli }}
-            </h2>
-          </div>
+      <div v-else class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-100">
+                <th class="px-5 py-4 font-semibold text-gray-600">No</th>
+                <th class="px-5 py-4 font-semibold text-gray-600">Poli</th>
+                <th class="px-5 py-4 font-semibold text-gray-600">Nama Dokter</th>
+                <th class="px-5 py-4 font-semibold text-gray-600">Jadwal Praktik</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(doc, index) in paginatedData" :key="doc.id_dokter" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
+                <td class="px-5 py-4 text-gray-600">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
+                <td class="px-5 py-4 text-gray-600">{{ doc.nama_poli || '-' }}</td>
+                <td class="px-5 py-4 text-gray-800 font-medium">{{ doc.nama_dokter }}</td>
+                <td class="px-5 py-4 text-gray-600 text-sm">{{ doc.jadwal_praktik }}</td>
+              </tr>
+              <tr v-if="allDokter.length === 0">
+                <td colspan="4" class="py-12 text-center text-gray-400">
+                  Belum ada jadwal dokter tersedia.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-          <div class="p-4">
-            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-              Dokter Bertugas:
-            </h3>
-
-            <div class="space-y-4">
-              <div v-for="doc in getDokterByPoli(item.id_poli)" :key="doc.id_dokter" class="border-l-4 border-emerald-500 pl-3">
-                <p class="font-medium text-gray-800">
-                  {{ doc.nama_dokter }}
-                </p>
-                <p class="text-sm text-gray-500 flex items-center mt-1">
-                  <span class="mr-1">🕒</span> {{ doc.jadwal_praktik }}
-                </p>
-              </div>
-            </div>
-
-            <div v-if="getDokterByPoli(item.id_poli).length === 0" class="text-sm text-gray-400 italic">
-              Belum ada jadwal dokter tersedia.
-            </div>
-          </div>
+        <!-- Pagination Controls -->
+        <div v-if="totalPages > 1" class="flex justify-between items-center mt-6">
+          <p class="text-sm text-gray-600">
+            Menampilkan {{ (currentPage - 1) * itemsPerPage + 1 }} - 
+            {{ Math.min(currentPage * itemsPerPage, allDokter.length) }} dari {{ allDokter.length }} data
+          </p>
+          <UPagination v-model:page="currentPage" active-color="primary" :total="allDokter.length" />
         </div>
       </div>
     </div>

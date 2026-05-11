@@ -1,6 +1,5 @@
 import axios from 'axios'
 
-/* ================= OBAT ================= */
 export interface Obat {
   id_obat?: number
   nama_obat: string
@@ -10,7 +9,6 @@ export interface Obat {
 }
 
 const API_URL_OBAT = 'http://localhost:3000/api/obat'
-const API_URL_DETAILRESEP = 'http://localhost:3000/api/detail-resep'
 
 export const obatService = {
   async getAllObat(): Promise<Obat[]> {
@@ -28,6 +26,7 @@ export const obatService = {
     return response.data
   },
 }
+const API_URL_DETAILRESEP = 'http://localhost:3000/api/detail-resep'
 
 export interface DetailResep {
   id_detail?: number
@@ -44,7 +43,7 @@ export const detailresepService = {
     return response.data
   },
 
-  async createDetailResep(data: { obat_id: number, jumlah_obat: number, dosis: string }) {
+  async createDetailResep(data: { obat_id: number; jumlah_obat: number; dosis: string }) {
     const response = await axios.post(API_URL_DETAILRESEP, data)
     return response.data
   },

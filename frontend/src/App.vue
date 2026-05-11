@@ -12,20 +12,20 @@ const layout = computed(
 )
 
 // Timer batas tidak aktif (Idle) - Ditetapkan 2 Jam (dalam milidetik)
-const IDLE_TIMEOUT = 2 * 60 * 60 * 1000 
+const IDLE_TIMEOUT = 2 * 60 * 60 * 1000
 let idleTimer: ReturnType<typeof setTimeout>
 
-const logoutUser = () => {
+function logoutUser() {
   // Hanya proses logout jika user SEDANG TDK BERADA di halaman Login
   if (currentRoute.value.name !== 'Login') {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     router.push({ name: 'Login' })
-    alert("Sesi Anda telah habis karena tidak ada aktivitas. Silakan login kembali.")
+    alert('Sesi Anda telah habis karena tidak ada aktivitas. Silakan login kembali.')
   }
 }
 
-const resetIdleTimer = () => {
+function resetIdleTimer() {
   clearTimeout(idleTimer)
   // Mulai hitung ulang setiap ada pergerakan
   idleTimer = setTimeout(logoutUser, IDLE_TIMEOUT)
@@ -36,7 +36,7 @@ onMounted(() => {
   window.addEventListener('keydown', resetIdleTimer)
   window.addEventListener('click', resetIdleTimer)
   window.addEventListener('scroll', resetIdleTimer)
-  
+
   resetIdleTimer()
 })
 

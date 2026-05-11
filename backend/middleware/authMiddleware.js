@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-// Satpam 1: Cek Token (Tetap sama seperti sebelumnya)
 const verifyToken = (req, res, next) => {
   const authHeader = req.header('Authorization');
   if (!authHeader) return res.status(401).json({ error: "Akses ditolak. Token tidak ditemukan." });
@@ -16,16 +15,14 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// Satpam 2: Cek Multi-Role (BARU)
 const authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {
-    // Mengecek apakah role user yang login ada di dalam daftar role yang diizinkan
     if (!req.user || !req.user.role || !allowedRoles.includes(req.user.role)) {
       return res.status(403).json({ 
         error: `Akses Ditolak! Fitur ini tidak tersedia untuk role: ${req.user?.role || 'Guest'}` 
       });
     }
-    next(); // Lolos, silakan masuk
+    next();
   };
 };
 

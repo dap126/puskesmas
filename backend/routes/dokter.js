@@ -16,40 +16,7 @@ router.get('/', verifyToken, authorizeRoles('admin', 'staff', 'dokter'), (req, r
     });
 });
 
-// 2. CREATE: Tambah dokter baru
-router.post('/', verifyToken, authorizeRoles('admin', 'staff', 'dokter'), (req, res) => {
-    const { nama_dokter, jadwal_praktik, users_idusers, poli_id_poli } = req.body;
-    const sql = "INSERT INTO dokter (nama_dokter, jadwal_praktik, users_idusers, poli_id_poli) VALUES (?, ?, ?, ?)";
-    
-    db.query(sql, [nama_dokter, jadwal_praktik, users_idusers || null, poli_id_poli], (err, result) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: "Data dokter berhasil ditambahkan", id: result.insertId });
-    });
-});
-
-// 3. UPDATE: Ubah data dokter
-router.put('/:id', verifyToken, authorizeRoles('admin', 'staff', 'dokter'), (req, res) => {
-    const { id } = req.params;
-    const { nama_dokter, jadwal_praktik, poli_id_poli } = req.body;
-    const sql = "UPDATE dokter SET nama_dokter = ?, jadwal_praktik = ?, poli_id_poli = ? WHERE id_dokter = ?";
-    
-    db.query(sql, [nama_dokter, jadwal_praktik, poli_id_poli, id], (err, result) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: "Data dokter berhasil diperbarui" });
-    });
-});
-
-// 4. DELETE: Hapus dokter
-router.delete('/:id', verifyToken, authorizeRoles('admin', 'staff', 'dokter'), (req, res) => {
-    const { id } = req.params;
-    const sql = "DELETE FROM dokter WHERE id_dokter = ?";
-    
-    db.query(sql, [id], (err, result) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: "Data dokter berhasil dihapus" });
-    });
-});
-
+// POLI routes — harus SEBELUM /:id agar tidak tertangkap sebagai parameter dinamis
 router.get('/poli', verifyToken, authorizeRoles('admin', 'staff', 'dokter'), (req, res) => {
     db.query("SELECT * FROM poli", (err, results) => {
         if (err) return res.status(500).json(err);
@@ -76,6 +43,42 @@ router.delete('/poli/:id', verifyToken, authorizeRoles('admin'), (req, res) => {
         res.json({ message: "Poli berhasil dihapus" });
     });
 });
+
+// 2. CREATE: Tambah dokter baru
+router.post('/', verifyToken, authorizeRoles('admin', 'staff', 'dokter'), (req, res) => {
+    const { nama_dokter, nip, no_hp, jadwal_praktik, users_idusers, poli_id_poli } = req.body;
+    const sql = "INSERT INTO dokter (nama_dokter, nip, no_hp, jadwal_praktik, users_idusers, poli_id_poli) VALUES (?, ?, ?, ?, ?, ?)";
+    
+    db.query(sql, [nama_dokter, nip, no_hp || null, jadwal_praktik, users_idusers || null, poli_id_poli], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: "Data dokter berhasil ditambahkan", id: result.insertId });
+    });
+});
+
+// 3. UPDATE: Ubah data dokter
+router.put('/:id', verifyToken, authorizeRoles('admin', 'staff', 'dokter'), (req, res) => {
+    const { id } = req.params;
+    const { nama_dokter, nip, no_hp, jadwal_praktik, poli_id_poli } = req.body;
+    const sql = "UPDATE dokter SET nama_dokter = ?, nip = ?, no_hp = ?, jadwal_praktik = ?, poli_id_poli = ? WHERE id_dokter = ?";
+    
+    db.query(sql, [nama_dokter, nip, no_hp || null, jadwal_praktik, poli_id_poli, id], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: "Data dokter berhasil diperbarui" });
+    });
+});
+
+// 4. DELETE: Hapus dokter
+router.delete('/:id', verifyToken, authorizeRoles('admin', 'staff', 'dokter'), (req, res) => {
+    const { id } = req.params;
+    const sql = "DELETE FROM dokter WHERE id_dokter = ?";
+    
+    db.query(sql, [id], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: "Data dokter berhasil dihapus" });
+    });
+});
+
+// (Poli routes sudah dipindahkan ke atas, sebelum /:id)
 
 // 5. PATCH: Link dokter ke akun user
 router.patch('/:id/link-user', verifyToken, authorizeRoles('admin'), (req, res) => {

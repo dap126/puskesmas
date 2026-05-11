@@ -1,16 +1,15 @@
-import axios from "axios";
+import axios from 'axios'
 
 // Pasien
-export interface Pasien{
-    idpasien?: number
-    nik?: number
-    no_rm?: string
-    nama_pasien: string
-    tgl_lahir: number | string
-    jenis_kelamin: string
-    alamat?: string
-    no_telpon?: string
-    no_telepon?: string
+export interface Pasien {
+  idpasien?: number
+  nik?: number
+  no_rm?: string
+  nama_pasien: string
+  tgl_lahir: number | string
+  jenis_kelamin: string
+  alamat?: string
+  no_telpon?: string
 }
 const API_URL_PASIEN = 'http://localhost:3000/api/pasien'
 
@@ -31,17 +30,21 @@ export const pasienService = {
   async deletePasien(id: number): Promise<void> {
     await axios.delete(`${API_URL_PASIEN}/${id}`)
   },
+
+  // Update pasien
+  async updatePasien(id: number, data: Partial<Pasien>): Promise<void> {
+    await axios.put(`${API_URL_PASIEN}/${id}`, data)
+  },
 }
 
-
 // Antrean
-export interface Antrean{
-    idantrean : number
-    tgl_antrean : number
-    no_antrean : string
-    status : number
-    pasien_idpasien : string
-    poli_id_poli : number
+export interface Antrean {
+  idantrean: number
+  tgl_antrean: number
+  no_antrean: string
+  status: number
+  pasien_idpasien: string
+  poli_id_poli: number
 }
 
 const API_URL_ANTREAN = 'http://localhost:3000/api/antrean'
@@ -73,5 +76,5 @@ export const antreanService = {
   async resetAntrean(): Promise<any> {
     const response = await axios.delete(`${API_URL_ANTREAN}/reset`)
     return response.data
-  }
+  },
 }

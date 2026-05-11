@@ -15,6 +15,7 @@ import Riwayat from './views/Riwayat-medis.vue'
 import Laporan from './views/Laporan.vue'
 import ManajemenUserPage from './views/manajemen/user.vue'
 import ManajemenDokterPage from './views/manajemen/dokter.vue'
+import ManajemenPasienPage from './views/manajemen/pasien.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -82,13 +83,19 @@ const routes: RouteRecordRaw[] = [
     path: '/manajemen/user',
     name: 'Manajemen-user-page',
     component: ManajemenUserPage,
-    meta: { requiresRole: 'admin' }
+    meta: { requiresRole: 'admin' },
   },
   {
     path: '/manajemen/dokter',
     name: 'Manajemen-dokter-page',
     component: ManajemenDokterPage,
-    meta: { requiresRole: 'admin' }
+    meta: { requiresRole: 'admin' },
+  },
+  {
+    path: '/manajemen/pasien',
+    name: 'Manajemen-pasien-page',
+    component: ManajemenPasienPage,
+    meta: { requiresRole: 'admin' },
   },
 ]
 
@@ -103,27 +110,24 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
   const userRole = localStorage.getItem('user_role')
 
-  if (to.name !== 'Login' && !token) {
+  if (to.name !== 'Login' && !token)
     return next({ name: 'Login' })
-  }
-  
-  if (to.name === 'Login' && token) {
+
+  if (to.name === 'Login' && token)
     return next({ name: 'Dashboard' })
-  }
 
   // Pengecekan Hak Akses (Role)
   if (to.meta.requiresRole) {
     if (userRole !== to.meta.requiresRole) {
       alert('Akses Ditolak! Anda tidak memiliki izin untuk membuka halaman ini.')
-      if (from.path && from.path !== '/') {
+      if (from.path && from.path !== '/')
         return next(from.path)
-      } else {
+      else
         return next('/dashboard')
-      }
     }
   }
 
-  next() 
+  next()
 })
 
 export default router

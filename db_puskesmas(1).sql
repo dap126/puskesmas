@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Apr 28, 2026 at 02:19 PM
+-- Generation Time: May 01, 2026 at 12:06 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -41,8 +41,11 @@ CREATE TABLE `antrean` (
 --
 
 INSERT INTO `antrean` (`idantrean`, `tgl_antrean`, `no_antrean`, `status`, `pasien_idpasien`, `poli_id_poli`) VALUES
-(2, '2026-04-24', 'PA-01', 'Menunggu', 2, 3),
-(3, '2026-04-25', 'PG-01', 'Selesai', 2, 2);
+(11, '2026-04-30', 'PU-01', 'Selesai', 2, 1),
+(12, '2026-04-30', 'PU-02', 'Selesai', 3, 1),
+(13, '2026-04-30', 'PG-01', 'Selesai', 4, 2),
+(14, '2026-04-30', 'PG-02', 'Selesai', 5, 2),
+(15, '2026-04-30', 'PA-01', 'Selesai', 7, 3);
 
 -- --------------------------------------------------------
 
@@ -57,6 +60,13 @@ CREATE TABLE `detail_resep` (
   `resep_obat_id_resep` int NOT NULL,
   `obat_id_obat` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+--
+-- Dumping data for table `detail_resep`
+--
+
+INSERT INTO `detail_resep` (`id_detail`, `jumlah_obat`, `dosis`, `resep_obat_id_resep`, `obat_id_obat`) VALUES
+(3, 5, '3x1 Hari', 3, 1);
 
 -- --------------------------------------------------------
 
@@ -109,7 +119,7 @@ CREATE TABLE `obat` (
 --
 
 INSERT INTO `obat` (`id_obat`, `nama_obat`, `kategori`, `stok`, `satuan`) VALUES
-(1, 'Paracetamol 500mg', 'Tablet', 250, 'Strip'),
+(1, 'Paracetamol 500mg', 'Tablet', 238, 'Strip'),
 (2, 'Amoxicillin 500mg', 'Kapsul', 120, 'Strip'),
 (3, 'Sanmol Sirup Anak 60ml', 'Sirup', 45, 'Botol'),
 (4, 'Ibuprofen 400mg', 'Tablet', 180, 'Strip'),
@@ -205,6 +215,13 @@ CREATE TABLE `rekam_medis` (
   `dokter_id_dokter` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
+--
+-- Dumping data for table `rekam_medis`
+--
+
+INSERT INTO `rekam_medis` (`id_rm`, `tgl_periksa`, `keluhan`, `tinggi_badan`, `berat_badan`, `tekanan_darah`, `diagnosa`, `pasien_idpasien`, `dokter_id_dokter`) VALUES
+(8, '2026-05-01 10:18:29', 'Sakit kepala pusing', 189, 81, '190/80', 'Demam', 5, 27);
+
 -- --------------------------------------------------------
 
 --
@@ -217,6 +234,13 @@ CREATE TABLE `resep_obat` (
   `status_tebus` enum('belum','selesai') NOT NULL,
   `rekam_medis_id_rm` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+--
+-- Dumping data for table `resep_obat`
+--
+
+INSERT INTO `resep_obat` (`id_resep`, `tgl_resep`, `status_tebus`, `rekam_medis_id_rm`) VALUES
+(3, '2026-05-01 17:18:29', 'belum', 8);
 
 -- --------------------------------------------------------
 
@@ -238,8 +262,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`idusers`, `username`, `nama`, `password`, `role`) VALUES
 (1, 'admin', NULL, '$2b$10$J0aC32UtxGLsEWX0FwugL.npzHNUe9zaXO6t0oie3Rnl1e/W9coQ.', 'admin'),
-(2, 'agus', 'Dr. Agus', '$2b$10$5BzqN6nTuSAVxSew2BsI9ul8chsjRuuFevy1vIVNWSG6WMb4hj/Oy', 'dokter'),
-(3, 'budi', 'Budiono Siregar', '$2b$10$.mKG5y3juuEJ7MjBRjmrjeB0stxyOcIy5/5vgoxn/ziBPKrX/LwbW', 'staff');
+(2, 'agus', 'Dr. Agus', '$2b$10$5BzqN6nTuSAVxSew2BsI9ul8chsjRuuFevy1vIVNWSG6WMb4hj/Oy', 'dokter');
 
 --
 -- Indexes for dumped tables
@@ -321,13 +344,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `antrean`
 --
 ALTER TABLE `antrean`
-  MODIFY `idantrean` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `idantrean` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `detail_resep`
 --
 ALTER TABLE `detail_resep`
-  MODIFY `id_detail` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id_detail` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `dokter`
@@ -357,13 +380,13 @@ ALTER TABLE `poli`
 -- AUTO_INCREMENT for table `rekam_medis`
 --
 ALTER TABLE `rekam_medis`
-  MODIFY `id_rm` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_rm` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `resep_obat`
 --
 ALTER TABLE `resep_obat`
-  MODIFY `id_resep` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id_resep` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `users`

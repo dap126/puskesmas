@@ -5,56 +5,55 @@ export interface Dokter {
   id_dokter?: number
   nama_dokter: string
   nip: number
-  no_hp: number
+  no_telpon: number
   jadwal_praktik: string
   status: string
   users_idusers: number
   poli_id_poli: number
 }
-const API_URL_DOKTER = 'http://localhost:3000/api/dokter'
-const API_URL_POLI = 'http://localhost:3000/api/poli'
+const API_URL = 'http://localhost:3000/api/dokter'
 
 export const dokterService = {
   // Ambil semua data dokter
   async getAllDokter(): Promise<Dokter[]> {
-    const response = await axios.get(API_URL_DOKTER)
+    const response = await axios.get(API_URL)
     return response.data
   },
 
   // Tambah dokter baru
   async createDokter(data: Dokter): Promise<void> {
-    await axios.post(API_URL_DOKTER, data)
+    await axios.post(API_URL, data)
   },
 
   // Hapus dokter
   async deleteDokter(id: number): Promise<void> {
-    await axios.delete(`${API_URL_DOKTER}/${id}`)
+    await axios.delete(`${API_URL}/${id}`)
   },
 
   // Link dokter ke akun user
   async linkDokterToUser(idDokter: number, idUser: number): Promise<void> {
-    await axios.patch(`${API_URL_DOKTER}/${idDokter}/link-user`, { users_idusers: idUser })
+    await axios.patch(`${API_URL}/${idDokter}/link-user`, { users_idusers: idUser })
   },
 }
 
 // Poli
 export interface Poli {
   id_poli: number
-  nama_poli: string
+  nama_poli?: string
 }
 
 export const poliService = {
   async getAllPoli(): Promise<Poli[]> {
-    const response = await axios.get(API_URL_POLI)
+    const response = await axios.get(`${API_URL}/poli`)
     return response.data
   },
   // Tambah POLI
   async createPoli(data: Poli): Promise<void> {
-    await axios.post(API_URL_POLI, data)
+    await axios.post(`${API_URL}/poli`, data)
   },
 
   // Hapus POLI
   async deletePoli(id: number): Promise<void> {
-    await axios.delete(`${API_URL_POLI}/${id}`)
+    await axios.delete(`${API_URL}/poli/${id}`)
   },
 }

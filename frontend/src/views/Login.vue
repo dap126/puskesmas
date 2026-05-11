@@ -37,8 +37,8 @@ const { username, password, errorMessage, isLoading, login } = useAuth()
         <label class="block">
           <span class="text-sm text-gray-700">Username</span>
           <input
-            type="text"
             v-model="username"
+            type="text"
             required
             class="block w-full mt-1 border-gray-200 rounded-md focus:border-indigo-600 focus:ring focus:ring-opacity-40 focus:ring-indigo-500"
           >
@@ -47,8 +47,8 @@ const { username, password, errorMessage, isLoading, login } = useAuth()
         <label class="block mt-3">
           <span class="text-sm text-gray-700">Password</span>
           <input
-            type="password"
             v-model="password"
+            type="password"
             required
             class="block w-full mt-1 border-gray-200 rounded-md focus:border-indigo-600 focus:ring focus:ring-opacity-40 focus:ring-indigo-500"
           >

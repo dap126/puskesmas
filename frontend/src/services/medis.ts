@@ -1,18 +1,18 @@
 import axios from 'axios'
+
 export interface medis {
-    id_rm : number
-    tgl_periksa : number
-    keluhan : string
-    tinggi_badan : number
-    berat_badan : number
-    tekanan_darah : string
-    diagnosa : string
-    pasien_idpasien : string
-    dokter_id_dokter : string
+  id_rm: number
+  tgl_periksa: number
+  keluhan: string
+  tinggi_badan: number
+  berat_badan: number
+  tekanan_darah: string
+  diagnosa: string
+  pasien_idpasien: string
+  dokter_id_dokter: string
 }
 
 const API_URL_MEDIS = 'http://localhost:3000/api/medis'
-const API_URL_RESEP = 'http://localhost:3000/api/resep'
 
 export const medisService = {
   // Ambil semua data medis
@@ -33,11 +33,12 @@ export const medisService = {
   },
 }
 
+const API_URL_RESEP = 'http://localhost:3000/api/resep'
 export interface resep {
-    id_resep : number
-    tgl_resep : number
-    status_tebus : string
-    rekam_medis_id_rm : number
+  id_resep: number
+  tgl_resep: number
+  status_tebus: string
+  rekam_medis_id_rm: number
 }
 
 export const resepService = {
@@ -53,7 +54,7 @@ export const resepService = {
   },
 
   // Tambah resep menggunakan database transaction (banyak obat sekaligus)
-  async createResepTransaction(payload: { rekam_medis_id_rm: number, daftar_obat: any[] }): Promise<any> {
+  async createResepTransaction(payload: { rekam_medis_id_rm: number; daftar_obat: any[] }): Promise<any> {
     const response = await axios.post(API_URL_RESEP, payload)
     return response.data
   },
