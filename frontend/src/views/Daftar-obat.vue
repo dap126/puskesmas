@@ -6,6 +6,7 @@ const search = ref('')
 const showModal = ref(false)
 const editMode = ref(false)
 const daftarObat = ref<Obat[]>([])
+const pesanSukses = ref('')
 const pesanError = ref('')
 const showConfirmDialog = ref(false)
 const deleteId = ref<number | undefined>(undefined)
@@ -73,6 +74,7 @@ function editObat(obat: Obat) {
 }
 
 async function simpanObat() {
+  pesanSukses.value = ''
   pesanError.value = ''
   try {
     if (editMode.value && form.value.id_obat) {
@@ -86,6 +88,7 @@ async function simpanObat() {
         satuan: form.value.satuan,
       })
     }
+    pesanSukses.value = editMode.value ? 'Data obat berhasil diperbarui' : 'Data obat berhasil ditambahkan'
     fetchObat()
     tutupModal()
   }
@@ -110,14 +113,17 @@ function cancelDelete() {
 async function hapusObat() {
   if (!deleteId.value)
     return
+  pesanSukses.value = ''
+  pesanError.value = ''
   try {
     await obatService.deleteObat(deleteId.value)
+    pesanSukses.value = 'Data obat berhasil dihapus'
     showConfirmDialog.value = false
     deleteId.value = undefined
     fetchObat()
   }
-  catch (error) {
-    console.error('Gagal menghapus obat:', error)
+  catch (error: any) {
+    pesanError.value = error.message || 'Gagal menghapus obat'
     showConfirmDialog.value = false
   }
 }
@@ -144,6 +150,20 @@ onMounted(() => {
           </svg>
           Tambah Obat
         </button>
+      </div>
+
+      <!-- Alert Sukses -->
+      <div v-if="pesanSukses && !showModal && !showConfirmDialog" class="mb-4">
+        <p class="text-emerald-600 text-sm font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">
+          {{ pesanSukses }}
+        </p>
+      </div>
+
+      <!-- Alert Error -->
+      <div v-if="pesanError && !showModal && !showConfirmDialog" class="mb-4">
+        <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
+          {{ pesanError }}
+        </p>
       </div>
 
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">

@@ -9,14 +9,14 @@ const antreanRules = [
     .toDate(),
 
   body('no_antrean')
+    .trim()
     .notEmpty().withMessage('Nomor antrean wajib diisi')
-    .isInt({ min: 1 }).withMessage('Nomor antrean harus berupa angka positif')
-    .toInt(),
+    .isLength({ min: 1, max: 20 }).withMessage('Nomor antrean maksimal 20 karakter'),
 
   body('status')
     .trim()
     .notEmpty().withMessage('Status wajib diisi')
-    .isIn(['menunggu', 'dipanggil', 'selesai', 'batal']).withMessage('Status tidak valid'),
+    .isIn(['Menunggu', 'Dipanggil', 'Selesai', 'Batal', 'menunggu', 'dipanggil', 'selesai', 'batal']).withMessage('Status tidak valid'),
 
   body('pasien_idpasien')
     .notEmpty().withMessage('ID pasien wajib diisi')
@@ -36,7 +36,7 @@ const updateStatusAntreanRules = [
   body('status')
     .trim()
     .notEmpty().withMessage('Status wajib diisi')
-    .isIn(['menunggu', 'dipanggil', 'selesai', 'batal']).withMessage('Status tidak valid'),
+    .isIn(['Menunggu', 'Dipanggil', 'Selesai', 'Batal', 'menunggu', 'dipanggil', 'selesai', 'batal']).withMessage('Status tidak valid'),
 
   validate,
 ];

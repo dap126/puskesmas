@@ -7,6 +7,7 @@ const router = useRouter()
 const antrean = ref<any[]>([])
 const showResetDialog = ref(false)
 const pesanSukses = ref('')
+const pesanError = ref('')
 
 const totalMenunggu = computed(() => {
   return antrean.value.filter(a => a.status === 'Menunggu').length
@@ -44,34 +45,42 @@ async function fetchAntrean() {
 }
 
 async function selesai(item: any) {
+  pesanSukses.value = ''
+  pesanError.value = ''
   try {
-    await antreanService.updateStatus(item.idantrean, 'selesai')
+    await antreanService.updateStatus(item.idantrean, 'Selesai')
     item.status = 'Selesai'
+    pesanSukses.value = `Antrean ${item.no_antrean} (${item.nama_pasien}) ditandai selesai`
   }
-  catch (error) {
-    console.error(error)
+  catch (error: any) {
+    pesanError.value = error.message || 'Gagal mengubah status antrean'
   }
 }
 
 async function undoAntrean(item: any) {
+  pesanSukses.value = ''
+  pesanError.value = ''
   try {
-    await antreanService.updateStatus(item.idantrean, 'menunggu')
+    await antreanService.updateStatus(item.idantrean, 'Menunggu')
     item.status = 'Menunggu'
+    pesanSukses.value = `Antrean ${item.no_antrean} (${item.nama_pasien}) dikembalikan ke Menunggu`
   }
-  catch (error) {
-    console.error(error)
+  catch (error: any) {
+    pesanError.value = error.message || 'Gagal mengubah status antrean'
   }
 }
 
 async function resetAntrean() {
+  pesanSukses.value = ''
+  pesanError.value = ''
   try {
     const result = await antreanService.resetAntrean()
     pesanSukses.value = result.message || 'Antrean berhasil direset'
     showResetDialog.value = false
     fetchAntrean()
   }
-  catch (error) {
-    console.error('Gagal mereset antrean:', error)
+  catch (error: any) {
+    pesanError.value = error.message || 'Gagal mereset antrean'
     showResetDialog.value = false
   }
 }
@@ -104,6 +113,13 @@ onMounted(() => {
       <div v-if="pesanSukses" class="mb-4">
         <p class="text-emerald-600 text-sm font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">
           {{ pesanSukses }}
+        </p>
+      </div>
+
+      <!-- Alert Error -->
+      <div v-if="pesanError" class="mb-4">
+        <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
+          {{ pesanError }}
         </p>
       </div>
 

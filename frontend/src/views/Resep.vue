@@ -8,6 +8,8 @@ const search = ref('')
 const showConfirmDialog = ref(false)
 const batalId = ref<number | undefined>(undefined) // id_resep (resep_obat_id_resep)
 const loadingToggle = ref<number | null>(null)      // id_resep yang sedang di-toggle
+const pesanSukses = ref('')
+const pesanError = ref('')
 
 // ================= GET DATA =================
 async function fetchDetail() {
@@ -47,6 +49,8 @@ async function toggleStatusTebus(item: DetailResep) {
   const idResep = item.resep_obat_id_resep
   const statusBaru: 'belum' | 'sudah' = item.status_tebus === 'sudah' ? 'belum' : 'sudah'
 
+  pesanSukses.value = ''
+  pesanError.value = ''
   loadingToggle.value = idResep
   try {
     await detailresepService.updateStatusTebus(idResep, statusBaru)
@@ -54,9 +58,10 @@ async function toggleStatusTebus(item: DetailResep) {
     daftarDetail.value = daftarDetail.value.map(d =>
       d.resep_obat_id_resep === idResep ? { ...d, status_tebus: statusBaru } : d
     )
+    pesanSukses.value = `Status tebus berhasil diubah menjadi: ${statusBaru === 'sudah' ? 'Sudah Ditebus' : 'Belum Ditebus'}`
   }
   catch (error: any) {
-    console.error('Gagal update status:', error.message)
+    pesanError.value = error.message || 'Gagal update status tebus'
   }
   finally {
     loadingToggle.value = null
@@ -77,14 +82,17 @@ function cancelBatal() {
 
 async function batalkanResep() {
   if (!batalId.value) return
+  pesanSukses.value = ''
+  pesanError.value = ''
   try {
     await detailresepService.batalResep(batalId.value)
+    pesanSukses.value = 'Resep berhasil dibatalkan'
     showConfirmDialog.value = false
     batalId.value = undefined
     fetchDetail()
   }
   catch (error: any) {
-    console.error(error.message)
+    pesanError.value = error.message || 'Gagal membatalkan resep'
     showConfirmDialog.value = false
   }
 }
@@ -102,6 +110,20 @@ onMounted(() => {
         <h3 class="text-xl font-semibold text-gray-800">
           Daftar Resep
         </h3>
+      </div>
+
+      <!-- Alert Sukses -->
+      <div v-if="pesanSukses && !showConfirmDialog" class="mb-4">
+        <p class="text-emerald-600 text-sm font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">
+          {{ pesanSukses }}
+        </p>
+      </div>
+
+      <!-- Alert Error -->
+      <div v-if="pesanError && !showConfirmDialog" class="mb-4">
+        <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
+          {{ pesanError }}
+        </p>
       </div>
 
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">

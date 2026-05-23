@@ -81,13 +81,17 @@ export default {
       if (!deleteId.value)
         return
 
+      pesanSukses.value = ''
+      pesanError.value = ''
       try {
         await pasienService.deletePasien(deleteId.value)
+        pesanSukses.value = 'Data pasien berhasil dihapus'
         showConfirmDialog.value = false
         await fetchPasien()
       }
       catch (error) {
-        pesanError.value = error.message
+        pesanError.value = error.message || 'Gagal menghapus data pasien'
+        showConfirmDialog.value = false
       }
     }
 

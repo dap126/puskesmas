@@ -19,6 +19,32 @@ const form = ref({
   dokter_id_dokter: '' as number | string,
 })
 
+// Tekanan darah split inputs
+const tekananDarahSistol = ref('')
+const tekananDarahDiastol = ref('')
+
+// Popup states
+const showPopup = ref(false)
+const popupTitle = ref('')
+const popupMessage = ref('')
+const popupType = ref<'success' | 'error'>('success')
+const popupRedirectUrl = ref('')
+
+function displayPopup(title: string, message: string, type: 'success' | 'error' = 'error', redirectUrl = '') {
+  popupTitle.value = title
+  popupMessage.value = message
+  popupType.value = type
+  popupRedirectUrl.value = redirectUrl
+  showPopup.value = true
+}
+
+function closePopup() {
+  showPopup.value = false
+  if (popupType.value === 'success' && popupRedirectUrl.value) {
+    router.push(popupRedirectUrl.value)
+  }
+}
+
 const resep = ref<any[]>([])
 const obatList = ref<Obat[]>([])
 const pasienList = ref<Pasien[]>([])
@@ -109,7 +135,8 @@ function tambahObat() {
   resep.value.push({
     obat: '',
     jumlah: '',
-    dosis: '',
+    dosis1: '',
+    dosis2: '',
   })
 }
 
@@ -121,15 +148,15 @@ async function simpan() {
   try {
     // Validasi input
     if (!form.value.pasien_idpasien) {
-      alert('Silakan pilih pasien dari dropdown!')
+      displayPopup('Gagal', 'Silakan pilih pasien dari dropdown!', 'error')
       return
     }
     if (!form.value.dokter_id_dokter) {
-      alert('Silakan pilih dokter pemeriksa dari dropdown!')
+      displayPopup('Gagal', 'Silakan pilih dokter pemeriksa dari dropdown!', 'error')
       return
     }
     if (!form.value.keluhan) {
-      alert('Keluhan wajib diisi!')
+      displayPopup('Gagal', 'Keluhan wajib diisi!', 'error')
       return
     }
 
@@ -138,7 +165,7 @@ async function simpan() {
       keluhan: form.value.keluhan,
       tinggi_badan: Number(form.value.tinggi_badan) || 0,
       berat_badan: form.value.berat_badan ? Number(form.value.berat_badan) : null,
-      tekanan_darah: form.value.tekanan_darah,
+      tekanan_darah: `${tekananDarahSistol.value}/${tekananDarahDiastol.value}`,
       diagnosa: form.value.diagnosa,
       pasien_idpasien: Number(form.value.pasien_idpasien),
       dokter_id_dokter: Number(form.value.dokter_id_dokter),
@@ -153,7 +180,7 @@ async function simpan() {
       const daftarObat = resep.value.map(item => ({
         obat_id_obat: Number(item.obat),
         jumlah_obat: Number(item.jumlah),
-        dosis: item.dosis,
+        dosis: `${item.dosis1}x${item.dosis2}`,
       }))
 
       await resepService.createResepTransaction({
@@ -161,17 +188,15 @@ async function simpan() {
         daftar_obat: daftarObat,
       })
 
-      alert('Pemeriksaan & Resep Obat berhasil disimpan!')
-      router.push('/resep')
+      displayPopup('Berhasil', 'Pemeriksaan & Resep Obat berhasil disimpan!', 'success', '/resep')
     }
     else {
-      alert('Pemeriksaan berhasil disimpan!')
-      router.push('/riwayat-medis')
+      displayPopup('Berhasil', 'Pemeriksaan berhasil disimpan!', 'success', '/riwayat-medis')
     }
   }
   catch (error) {
     console.error('Gagal menyimpan pemeriksaan', error)
-    alert('Terjadi kesalahan saat menyimpan pemeriksaan.')
+    displayPopup('Terjadi Kesalahan', 'Terjadi kesalahan saat menyimpan pemeriksaan.', 'error')
   }
 }
 
@@ -280,11 +305,21 @@ onMounted(() => {
 
           <div class="flex flex-col">
             <label class="mb-1.5 font-semibold text-gray-700 text-sm">Tekanan Darah</label>
-            <input
-              v-model="form.tekanan_darah"
-              placeholder="contoh: 120/80"
-              class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
-            >
+            <div class="flex items-center gap-2">
+              <input
+                v-model="tekananDarahSistol"
+                type="number"
+                placeholder="120"
+                class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
+              >
+              <span class="text-gray-500 font-bold text-lg">/</span>
+              <input
+                v-model="tekananDarahDiastol"
+                type="number"
+                placeholder="80"
+                class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
+              >
+            </div>
           </div>
 
           <div class="col-span-3 flex flex-col">
@@ -346,7 +381,11 @@ onMounted(() => {
                   <input v-model="item.jumlah" type="number" min="1" class="px-3 py-2 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none text-sm">
                 </td>
                 <td class="px-5 py-3">
-                  <input v-model="item.dosis" placeholder="contoh: 3x1" class="px-3 py-2 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none text-sm">
+                  <div class="flex items-center gap-2">
+                    <input v-model="item.dosis1" type="number" min="1" placeholder="3" class="px-3 py-2 rounded-lg border border-gray-300 transition w-16 focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none text-sm text-center">
+                    <span class="text-gray-500 font-bold">x</span>
+                    <input v-model="item.dosis2" type="number" min="1" placeholder="1" class="px-3 py-2 rounded-lg border border-gray-300 transition w-16 focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none text-sm text-center">
+                  </div>
                 </td>
                 <td class="px-5 py-3 align-middle text-center">
                   <button class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition" title="Hapus Obat" @click="hapusObat(index)">
@@ -375,6 +414,28 @@ onMounted(() => {
           Simpan Pemeriksaan
         </button>
       </div>
+      
+      <!-- Custom Pop-up Alert -->
+      <div v-if="showPopup" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 text-center">
+          <div v-if="popupType === 'error'" class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-5">
+            <svg class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <div v-else class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-emerald-100 mb-5">
+            <svg class="h-8 w-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">{{ popupTitle }}</h3>
+          <p class="text-gray-600 mb-6">{{ popupMessage }}</p>
+          <button @click="closePopup" class="w-full inline-flex justify-center rounded-xl shadow-sm px-4 py-2.5 bg-indigo-600 text-base font-semibold text-white hover:bg-indigo-700 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Tutup
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>

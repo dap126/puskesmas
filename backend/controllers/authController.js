@@ -104,8 +104,18 @@ exports.editUser = async (req, res) => {
 // DELETE /users/:id
 exports.deleteUser = (req, res) => {
   const userId = req.params.id;
-  db.query('DELETE FROM users WHERE idusers = ?', [userId], (err) => {
-    if (err) return res.status(500).json({ error: 'Gagal menghapus user' });
-    res.status(200).json({ message: 'User berhasil dihapus' });
+  // Putuskan relasi dari dokter terlebih dahulu untuk menghindari error foreign key
+  db.query('UPDATE dokter SET users_idusers = NULL WHERE users_idusers = ?', [userId], (err1) => {
+    if (err1) {
+      console.error('Error saat menghapus relasi dokter:', err1);
+      return res.status(500).json({ error: 'Gagal memutuskan relasi dokter: ' + err1.message });
+    }
+    db.query('DELETE FROM users WHERE idusers = ?', [userId], (err2) => {
+      if (err2) {
+        console.error('Error saat menghapus user:', err2);
+        return res.status(500).json({ error: 'Gagal menghapus user: ' + err2.message });
+      }
+      res.status(200).json({ message: 'User berhasil dihapus' });
+    });
   });
 };

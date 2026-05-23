@@ -99,13 +99,17 @@ function cancelDelete() {
 async function confirmDelete() {
   if (!deleteId.value)
     return
+  pesanSukses.value = ''
+  pesanError.value = ''
   try {
     await dokterService.deleteDokter(deleteId.value)
+    pesanSukses.value = 'Data dokter berhasil dihapus'
     showConfirmDialog.value = false
     fetchDokter()
   }
   catch (error) {
-    console.error(error)
+    pesanError.value = error.message || 'Gagal menghapus data dokter'
+    showConfirmDialog.value = false
   }
 }
 
