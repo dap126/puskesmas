@@ -1,11 +1,8 @@
 <script setup>
 import { ref } from 'vue'
 
-// State untuk mengatur tab mana yang sedang aktif
-// Pilihan: 'ringkasan', 'kunjungan', 'penyakit', 'obat'
 const activeTab = ref('ringkasan')
 
-// (Nanti kita akan tambahkan fungsi fetch API untuk masing-masing tab di sini)
 </script>
 
 <template>
@@ -132,7 +129,6 @@ const activeTab = ref('ringkasan')
 </template>
 
 <style scoped>
-/* Sedikit animasi agar perpindahan tab terasa mulus */
 .animate-fade-in {
   animation: fadeIn 0.3s ease-in-out;
 }
