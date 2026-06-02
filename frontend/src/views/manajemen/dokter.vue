@@ -13,7 +13,7 @@ const showModal = ref(false)
 const form = ref({
   nama_dokter: '',
   nip: '',
-  no_telpon: '',
+  no_telepon: '',
   hari_praktik: '',
   jam_mulai: '',
   jam_selesai: '',
@@ -46,7 +46,7 @@ function openAddModal() {
   form.value = {
     nama_dokter: '',
     nip: '',
-    no_telpon: '',
+    no_telepon: '',
     hari_praktik: '',
     jam_mulai: '',
     jam_selesai: '',
@@ -69,7 +69,7 @@ async function handleSubmitDokter() {
     await dokterService.createDokter({
       nama_dokter: form.value.nama_dokter,
       nip: form.value.nip,
-      no_telpon: form.value.no_telpon,
+      no_telepon: form.value.no_telepon,
       jadwal_praktik: `${form.value.hari_praktik}, ${form.value.jam_mulai} - ${form.value.jam_selesai}`,
       users_idusers: null,
       poli_id_poli: Number(form.value.poli_id_poli),
@@ -181,7 +181,7 @@ function nextPage() {
                   NIP
                 </th>
                 <th class="px-5 py-4 font-semibold text-gray-600">
-                  No Telpon
+                  No Telepon
                 </th>
                 <th class="px-5 py-4 font-semibold text-gray-600">
                   Poli
@@ -206,7 +206,7 @@ function nextPage() {
                   {{ doc.nip }}
                 </td>
                 <td class="px-5 py-4 text-gray-600 text-sm">
-                  {{ doc.no_telpon || '-' }}
+                  {{ doc.no_telepon || '-' }}
                 </td>
                 <td class="px-5 py-4 text-gray-600">
                   {{ doc.nama_poli || '-' }}

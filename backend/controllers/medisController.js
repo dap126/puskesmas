@@ -3,11 +3,14 @@ const db = require('../config/db');
 // GET /
 exports.getAllMedis = (req, res) => {
   const sql = `
-    SELECT rm.*, p.nama_pasien, d.nama_dokter, ro.status_tebus
+    SELECT rm.*, p.nama_pasien, d.nama_dokter, ro.status_tebus,
+           a.status AS status_antrean
     FROM rekam_medis rm
     JOIN pasien p ON rm.pasien_idpasien = p.idpasien
     JOIN dokter d ON rm.dokter_id_dokter = d.id_dokter
     LEFT JOIN resep_obat ro ON ro.rekam_medis_id_rm = rm.id_rm
+    LEFT JOIN antrean a ON a.pasien_idpasien = rm.pasien_idpasien
+      AND DATE(a.tgl_antrean) = DATE(rm.tgl_periksa)
     ORDER BY rm.tgl_periksa DESC
   `;
   db.query(sql, (err, results) => {

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 01, 2026 at 12:06 PM
+-- Generation Time: Jun 02, 2026 at 03:12 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -41,11 +41,9 @@ CREATE TABLE `antrean` (
 --
 
 INSERT INTO `antrean` (`idantrean`, `tgl_antrean`, `no_antrean`, `status`, `pasien_idpasien`, `poli_id_poli`) VALUES
-(11, '2026-04-30', 'PU-01', 'Selesai', 2, 1),
-(12, '2026-04-30', 'PU-02', 'Selesai', 3, 1),
-(13, '2026-04-30', 'PG-01', 'Selesai', 4, 2),
-(14, '2026-04-30', 'PG-02', 'Selesai', 5, 2),
-(15, '2026-04-30', 'PA-01', 'Selesai', 7, 3);
+(24, '2026-06-02', 'PU-001', 'Selesai', 1, 1),
+(25, '2026-06-02', 'PU-002', 'Selesai', 2, 1),
+(26, '2026-06-02', 'PG-001', 'Selesai', 3, 2);
 
 -- --------------------------------------------------------
 
@@ -55,6 +53,7 @@ INSERT INTO `antrean` (`idantrean`, `tgl_antrean`, `no_antrean`, `status`, `pasi
 
 CREATE TABLE `detail_resep` (
   `id_detail` int NOT NULL,
+  `no_resep` varchar(20) NOT NULL,
   `jumlah_obat` int NOT NULL,
   `dosis` varchar(50) NOT NULL,
   `resep_obat_id_resep` int NOT NULL,
@@ -65,8 +64,12 @@ CREATE TABLE `detail_resep` (
 -- Dumping data for table `detail_resep`
 --
 
-INSERT INTO `detail_resep` (`id_detail`, `jumlah_obat`, `dosis`, `resep_obat_id_resep`, `obat_id_obat`) VALUES
-(3, 5, '3x1 Hari', 3, 1);
+INSERT INTO `detail_resep` (`id_detail`, `no_resep`, `jumlah_obat`, `dosis`, `resep_obat_id_resep`, `obat_id_obat`) VALUES
+(1, 'RSP-260602-001', 10, '3x1 Sesudah Makan', 1, 1),
+(2, 'RSP-260602-001', 1, '3x1 Sebelum Makan', 1, 4),
+(3, 'RSP-260520-001', 15, '3x1 Sesudah Makan', 2, 3),
+(4, 'RSP-260520-001', 15, '3x1 Dihabiskan', 2, 2),
+(5, 'RSP-260602-002', 2, '3x1', 3, 1);
 
 -- --------------------------------------------------------
 
@@ -78,7 +81,7 @@ CREATE TABLE `dokter` (
   `id_dokter` int NOT NULL,
   `nama_dokter` varchar(100) NOT NULL,
   `nip` varchar(50) NOT NULL,
-  `no_hp` varchar(20) DEFAULT NULL,
+  `no_telepon` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
   `jadwal_praktik` varchar(100) NOT NULL,
   `users_idusers` int DEFAULT NULL,
   `poli_id_poli` int NOT NULL
@@ -88,17 +91,9 @@ CREATE TABLE `dokter` (
 -- Dumping data for table `dokter`
 --
 
-INSERT INTO `dokter` (`id_dokter`, `nama_dokter`, `nip`, `no_hp`, `jadwal_praktik`, `users_idusers`, `poli_id_poli`) VALUES
-(27, 'dr. Agus Rusdi', '198001012005011001', '081234567890', 'Senin - Rabu, 08:00 - 14:00', NULL, 1),
-(28, 'drg. Budi Santoso', '198205122008031002', NULL, 'Selasa - Kamis, 09:00 - 15:00', NULL, 2),
-(29, 'dr. Citra Lestari, Sp.A', '198511202010122001', '085678901234', 'Senin & Kamis, 10:00 - 16:00', NULL, 3),
-(30, 'dr. Dian Pertiwi', '199003152015042003', '081122334455', 'Jumat - Sabtu, 08:00 - 13:00', NULL, 1),
-(31, 'drg. Eko Prasetyo', '198807222012111004', '082233445566', 'Senin, Rabu, Jumat, 14:00 - 20:00', NULL, 2),
-(32, 'dr. Fitriani, Sp.OG', '198309082009022005', NULL, 'Selasa & Jumat, 08:00 - 12:00', NULL, 3),
-(33, 'dr. Gunawan Wibisono', '197912302005011006', '081345678901', 'Senin - Kamis, 16:00 - 21:00', NULL, 1),
-(34, 'dr. Hendra Syahputra', '199201102018031007', '085712345678', 'Selasa, Kamis, Sabtu, 08:00 - 14:00', NULL, 1),
-(35, 'drg. Indah Permatasari', '198704182014052008', '087811223344', 'Senin - Rabu, 09:00 - 14:00', NULL, 2),
-(36, 'dr. Joko Susilo, Sp.A', '198106252006041009', '089988776655', 'Rabu & Sabtu, 10:00 - 15:00', NULL, 3);
+INSERT INTO `dokter` (`id_dokter`, `nama_dokter`, `nip`, `no_telepon`, `jadwal_praktik`, `users_idusers`, `poli_id_poli`) VALUES
+(1, 'Dr. Andi Pratama', '198001012005011001', '081234567890', 'Senin - Rabu, 08:00 - 14:00', 3, 1),
+(2, 'Dr. Siti Aminah', '198502022010012002', '081987654321', 'Kamis - Sabtu, 08:00 - 14:00', 4, 2);
 
 -- --------------------------------------------------------
 
@@ -119,21 +114,11 @@ CREATE TABLE `obat` (
 --
 
 INSERT INTO `obat` (`id_obat`, `nama_obat`, `kategori`, `stok`, `satuan`) VALUES
-(1, 'Paracetamol 500mg', 'Tablet', 238, 'Strip'),
-(2, 'Amoxicillin 500mg', 'Kapsul', 120, 'Strip'),
-(3, 'Sanmol Sirup Anak 60ml', 'Sirup', 45, 'Botol'),
-(4, 'Ibuprofen 400mg', 'Tablet', 180, 'Strip'),
-(5, 'Antasida Doen', 'Tablet', 300, 'Strip'),
-(6, 'Cefadroxil 500mg', 'Kapsul', 80, 'Strip'),
-(7, 'OBH Combi Batuk Berdahak', 'Sirup', 35, 'Botol'),
-(8, 'Salep 2-4', 'Salep', 50, 'Pot'),
-(9, 'Betadine Antiseptik 15ml', 'Cair', 40, 'Botol'),
-(10, 'Vitamin C IPI 50mg', 'Tablet', 150, 'Botol'),
-(11, 'Acyclovir 5% Krim', 'Salep', 25, 'Tube'),
-(12, 'Cetirizine 10mg', 'Tablet', 100, 'Strip'),
-(13, 'Dexamethasone 0.5mg', 'Tablet', 200, 'Strip'),
-(14, 'Oresol / Oralit', 'Serbuk', 150, 'Sachet'),
-(15, 'Gentamicin Tetes Mata', 'Cair', 30, 'Botol');
+(1, 'Paracetamol 500mg', 'Analgesik/Antipiretik', 150, 'Strip'),
+(2, 'Amoxicillin 500mg', 'Antibiotik', 80, 'Strip'),
+(3, 'Asam Mefenamat 500mg', 'Analgesik', 100, 'Strip'),
+(4, 'Antasida Doen', 'Obat Lambung', 50, 'Botol'),
+(5, 'Vitamin C 50mg', 'Suplemen/Vitamin', 200, 'Tablet');
 
 -- --------------------------------------------------------
 
@@ -148,34 +133,17 @@ CREATE TABLE `pasien` (
   `tgl_lahir` date NOT NULL,
   `jenis_kelamin` enum('Laki-laki','Perempuan') NOT NULL,
   `alamat` text NOT NULL,
-  `no_telpon` varchar(15) NOT NULL
+  `no_telepon` varchar(15) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 --
 -- Dumping data for table `pasien`
 --
 
-INSERT INTO `pasien` (`idpasien`, `nik`, `nama_pasien`, `tgl_lahir`, `jenis_kelamin`, `alamat`, `no_telpon`) VALUES
-(2, '3201011508800001', 'Budi Santoso', '1980-08-15', 'Laki-laki', 'Jl. Merdeka No. 10, RT 01/RW 02, Ciampea', '081234567890'),
-(3, '3201022005900002', 'Siti Aminah', '1990-05-20', 'Perempuan', 'Jl. Raya Bogor KM 40, Cibinong', '081345678901'),
-(4, '3201031010750003', 'Andi Wijaya', '1975-10-10', 'Laki-laki', 'Perumahan Griya Indah Blok A/5, Bogor', '081456789012'),
-(5, '3201041212950004', 'Dewi Lestari', '1995-12-12', 'Perempuan', 'Jl. Pahlawan No. 8, Tajur', '081567890123'),
-(6, '3201050505850005', 'Rudi Hermawan', '1985-05-05', 'Laki-laki', 'Jl. Diponegoro No. 12, Ciomas', '081678901234'),
-(7, '3201061708880006', 'Fitriani', '1988-08-17', 'Perempuan', 'Kp. Sawah Baru RT 04/01, Bojong Gede', '085212345678'),
-(8, '3201072512920007', 'Hendra Pratama', '1992-12-25', 'Laki-laki', 'Jl. Mayor Oking No. 7, Citeureup', '085323456789'),
-(9, '3201080101820008', 'Rina Susanti', '1982-01-01', 'Perempuan', 'Perum Bukit Asri Blok C/10, Leuwiliang', '085434567890'),
-(10, '3201091402900009', 'Agus Setiawan', '1990-02-14', 'Laki-laki', 'Jl. Teuku Umar No. 11, Kedung Halang', '085545678901'),
-(11, '3201103009980010', 'Maya Indah', '1998-09-30', 'Perempuan', 'Kp. Cikaret RT 02/05, Cibinong', '085656789012'),
-(12, '3201111111700011', 'Dedi Saputra', '1970-11-11', 'Laki-laki', 'Jl. Ahmad Yani No. 2, Tanah Sareal', '085767890123'),
-(13, '3201122204050012', 'Nina Karlina', '2005-04-22', 'Perempuan', 'Jl. Gajah Mada No. 6, Dramaga', '085878901234'),
-(14, '3201130808800013', 'Eko Prasetyo', '1980-08-08', 'Laki-laki', 'Perumahan Alam Asri No. 15, Ciawi', '081122334455'),
-(15, '3201141907930014', 'Sari Wulandari', '1993-07-19', 'Perempuan', 'Jl. Siliwangi No. 20, Sukasari', '081233445566'),
-(16, '3201150202870015', 'Iwan Setiawan', '1987-02-02', 'Laki-laki', 'Jl. Pajajaran No. 4, Bantarjati', '081344556677'),
-(17, '3201162810990016', 'Ratna Sari', '1999-10-28', 'Perempuan', 'Komp. IPB Sindang Barang, Bogor', '081455667788'),
-(18, '3201170303650017', 'Joko Susanto', '1965-03-03', 'Laki-laki', 'Jl. Tentara Pelajar No. 18, Cimanggu', '081566778899'),
-(19, '3201182104910018', 'Sri Rahayu', '1991-04-21', 'Perempuan', 'Kp. Muara Beres RT 01/01, Sukaraja', '081677889900'),
-(20, '3201191506840019', 'Ahmad Dahlan', '1984-06-15', 'Laki-laki', 'Jl. Baru Kemang No. 30, Kemang', '085288990011'),
-(21, '3201201010080020', 'Yulia Rahman', '2008-10-10', 'Perempuan', 'Jl. Raya Parung No. 50, Parung', '085399001122');
+INSERT INTO `pasien` (`idpasien`, `nik`, `nama_pasien`, `tgl_lahir`, `jenis_kelamin`, `alamat`, `no_telepon`) VALUES
+(1, '3201010101900001', 'Ahmad Rizal', '1990-01-15', 'Laki-laki', 'Jl. Pajajaran No.1, Bogor', '085111222333'),
+(2, '3174010202950002', 'Budi Santoso', '1995-05-20', 'Laki-laki', 'Jl. Sudirman No.5, Jakarta Selatan', '085222333444'),
+(3, '3201010303800003', 'Rina Kartika', '1980-08-10', 'Perempuan', 'Jl. Raya Ciampea, Bogor', '085333444555');
 
 -- --------------------------------------------------------
 
@@ -195,7 +163,7 @@ CREATE TABLE `poli` (
 INSERT INTO `poli` (`id_poli`, `nama_poli`) VALUES
 (1, 'Poli Umum'),
 (2, 'Poli Gigi'),
-(3, 'Poli Anak');
+(3, 'Poli KIA (Kesehatan Ibu & Anak)');
 
 -- --------------------------------------------------------
 
@@ -220,7 +188,9 @@ CREATE TABLE `rekam_medis` (
 --
 
 INSERT INTO `rekam_medis` (`id_rm`, `tgl_periksa`, `keluhan`, `tinggi_badan`, `berat_badan`, `tekanan_darah`, `diagnosa`, `pasien_idpasien`, `dokter_id_dokter`) VALUES
-(8, '2026-05-01 10:18:29', 'Sakit kepala pusing', 189, 81, '190/80', 'Demam', 5, 27);
+(1, '2026-06-02 09:15:00', 'Demam tinggi selama 3 hari, pusing, mual, dan badan terasa ngilu.', 170, 65, '120/80', 'Suspect Demam Berdarah Dengue / Tifus', 1, 1),
+(2, '2026-05-20 10:00:00', 'Sakit gigi geraham bawah sebelah kiri sejak semalam, bengkak.', 158, 55, '110/70', 'Karies Gigi dan Gingivitis', 3, 2),
+(3, '2026-06-02 14:31:33', 'Pusing, mual-mual', 180, 90, '100/90', 'Demam', 2, 1);
 
 -- --------------------------------------------------------
 
@@ -231,7 +201,7 @@ INSERT INTO `rekam_medis` (`id_rm`, `tgl_periksa`, `keluhan`, `tinggi_badan`, `b
 CREATE TABLE `resep_obat` (
   `id_resep` int NOT NULL,
   `tgl_resep` datetime NOT NULL,
-  `status_tebus` enum('belum','selesai') NOT NULL,
+  `status_tebus` enum('belum','sudah','batal') CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
   `rekam_medis_id_rm` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
@@ -240,7 +210,9 @@ CREATE TABLE `resep_obat` (
 --
 
 INSERT INTO `resep_obat` (`id_resep`, `tgl_resep`, `status_tebus`, `rekam_medis_id_rm`) VALUES
-(3, '2026-05-01 17:18:29', 'belum', 8);
+(1, '2026-06-02 09:30:00', 'belum', 1),
+(2, '2026-05-20 10:15:00', 'sudah', 2),
+(3, '2026-06-02 21:31:33', 'batal', 3);
 
 -- --------------------------------------------------------
 
@@ -262,7 +234,9 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`idusers`, `username`, `nama`, `password`, `role`) VALUES
 (1, 'admin', NULL, '$2b$10$J0aC32UtxGLsEWX0FwugL.npzHNUe9zaXO6t0oie3Rnl1e/W9coQ.', 'admin'),
-(2, 'agus', 'Dr. Agus', '$2b$10$5BzqN6nTuSAVxSew2BsI9ul8chsjRuuFevy1vIVNWSG6WMb4hj/Oy', 'dokter');
+(2, 'staff_loket', 'Rina Staff', '$2b$10$J0aC32UtxGLsEWX0FwugL.npzHNUe9zaXO6t0oie3Rnl1e/W9coQ.', 'staff'),
+(3, 'dr_andi', 'Dr. Andi Pratama', '$2b$10$J0aC32UtxGLsEWX0FwugL.npzHNUe9zaXO6t0oie3Rnl1e/W9coQ.', 'dokter'),
+(4, 'dr_siti', 'Dr. Siti Aminah', '$2b$10$J0aC32UtxGLsEWX0FwugL.npzHNUe9zaXO6t0oie3Rnl1e/W9coQ.', 'dokter');
 
 --
 -- Indexes for dumped tables
@@ -344,31 +318,31 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `antrean`
 --
 ALTER TABLE `antrean`
-  MODIFY `idantrean` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `idantrean` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `detail_resep`
 --
 ALTER TABLE `detail_resep`
-  MODIFY `id_detail` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_detail` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `dokter`
 --
 ALTER TABLE `dokter`
-  MODIFY `id_dokter` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id_dokter` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `obat`
 --
 ALTER TABLE `obat`
-  MODIFY `id_obat` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id_obat` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `pasien`
 --
 ALTER TABLE `pasien`
-  MODIFY `idpasien` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `idpasien` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `poli`
@@ -380,7 +354,7 @@ ALTER TABLE `poli`
 -- AUTO_INCREMENT for table `rekam_medis`
 --
 ALTER TABLE `rekam_medis`
-  MODIFY `id_rm` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id_rm` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `resep_obat`
@@ -392,7 +366,7 @@ ALTER TABLE `resep_obat`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `idusers` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `idusers` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Constraints for dumped tables

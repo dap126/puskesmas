@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { antreanService } from '../services/pasien'
 
@@ -8,6 +8,22 @@ const antrean = ref<any[]>([])
 const showResetDialog = ref(false)
 const pesanSukses = ref('')
 const pesanError = ref('')
+
+// State untuk mendeteksi pergantian hari
+let currentDate = new Date().toDateString()
+let dayCheckInterval: any = null
+
+function initDayChecker() {
+  // Cek setiap 1 menit apakah hari sudah berganti (melewati tengah malam)
+  dayCheckInterval = setInterval(() => {
+    const today = new Date().toDateString()
+    if (today !== currentDate) {
+      currentDate = today
+      antrean.value = [] // Langsung kosongkan tampilan di frontend
+      fetchAntrean() // Re-fetch (harusnya kosong karena backend sudah terfilter CURDATE)
+    }
+  }, 60000)
+}
 
 const totalMenunggu = computed(() => {
   return antrean.value.filter(a => a.status === 'Menunggu').length
@@ -87,6 +103,11 @@ async function resetAntrean() {
 
 onMounted(() => {
   fetchAntrean()
+  initDayChecker()
+})
+
+onUnmounted(() => {
+  if (dayCheckInterval) clearInterval(dayCheckInterval)
 })
 </script>
 
