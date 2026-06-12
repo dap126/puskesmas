@@ -28,7 +28,7 @@ const pasienRules = [
     .trim()
     .isLength({ max: 500 }).withMessage('Alamat maksimal 500 karakter'),
 
-  body('no_telpon')
+  body('no_telepon')
     .trim()
     .notEmpty().withMessage('No telepon wajib diisi')
     .matches(/^[0-9+\-() ]{8,20}$/).withMessage('Format nomor telepon tidak valid'),

@@ -28,17 +28,45 @@ const ageOptions = ref<ApexOptions>({
     },
   },
   xaxis: {
-    categories: ['Bayi (0-2 th)', 'Balita (3-5 th)', 'Anak-anak (6-12 th)', 'Remaja (13-17 th)', 'Dewasa (18-59 th)', 'Lansia (60+ th)'],
+    categories: ['0-2 th', '3-5 th', '6-12 th', '13-17 th', '18-59 th', '60+ th'],
+    labels: {
+      hideOverlappingLabels: false,
+    },
+    group: {
+      style: {
+        fontSize: '13px',
+        fontWeight: 700
+      },
+      groups: [
+        { title: 'Anak & Remaja', cols: 4 },
+        { title: 'Dewasa & Lansia', cols: 2 }
+      ]
+    }
   },
-  colors: ['#6366f1'],
+  yaxis: {
+    min: 0,
+    max: (max) => {
+      if (max <= 20) return 20;
+      return Math.ceil(max / 10) * 10;
+    },
+  },
+  colors: ['#3fa1f5'],
   plotOptions: {
     bar: {
-      borderRadius: 4,
+      borderRadius: 0,
       horizontal: false,
+      dataLabels: {
+        position: 'center',
+      }
     },
   },
   dataLabels: {
-    enabled: false,
+    enabled: true,
+    style: {
+      colors: ['#ffffff'],
+      fontSize: '14px',
+      fontWeight: 'bold',
+    }
   },
 })
 

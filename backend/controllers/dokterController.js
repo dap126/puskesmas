@@ -15,9 +15,9 @@ exports.getAllDokter = (req, res) => {
 
 // POST /
 exports.createDokter = (req, res) => {
-  const { nama_dokter, nip, no_hp, jadwal_praktik, users_idusers, poli_id_poli } = req.body;
-  const sql = 'INSERT INTO dokter (nama_dokter, nip, no_hp, jadwal_praktik, users_idusers, poli_id_poli) VALUES (?, ?, ?, ?, ?, ?)';
-  db.query(sql, [nama_dokter, nip, no_hp || null, jadwal_praktik, users_idusers || null, poli_id_poli], (err, result) => {
+  const { nama_dokter, nip, no_telepon, jadwal_praktik, users_idusers, poli_id_poli } = req.body;
+  const sql = 'INSERT INTO dokter (nama_dokter, nip, no_telepon, jadwal_praktik, users_idusers, poli_id_poli) VALUES (?, ?, ?, ?, ?, ?)';
+  db.query(sql, [nama_dokter, nip, no_telepon || null, jadwal_praktik, users_idusers || null, poli_id_poli], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: 'Data dokter berhasil ditambahkan', id: result.insertId });
   });
@@ -26,9 +26,9 @@ exports.createDokter = (req, res) => {
 // PUT /:id
 exports.updateDokter = (req, res) => {
   const { id } = req.params;
-  const { nama_dokter, nip, no_hp, jadwal_praktik, poli_id_poli } = req.body;
-  const sql = 'UPDATE dokter SET nama_dokter = ?, nip = ?, no_hp = ?, jadwal_praktik = ?, poli_id_poli = ? WHERE id_dokter = ?';
-  db.query(sql, [nama_dokter, nip, no_hp || null, jadwal_praktik, poli_id_poli, id], (err) => {
+  const { nama_dokter, nip, no_telepon, jadwal_praktik, poli_id_poli } = req.body;
+  const sql = 'UPDATE dokter SET nama_dokter = ?, nip = ?, no_telepon = ?, jadwal_praktik = ?, poli_id_poli = ? WHERE id_dokter = ?';
+  db.query(sql, [nama_dokter, nip, no_telepon || null, jadwal_praktik, poli_id_poli, id], (err) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: 'Data dokter berhasil diperbarui' });
   });

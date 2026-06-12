@@ -10,9 +10,14 @@ exports.getAllPasien = (req, res) => {
 
 // POST /pasien
 exports.createPasien = (req, res) => {
-  const { nama_pasien, nik, tgl_lahir, jenis_kelamin, alamat, no_telpon } = req.body;
-  const sql = 'INSERT INTO pasien (nama_pasien, nik, tgl_lahir, jenis_kelamin, alamat, no_telpon) VALUES (?, ?, ?, ?, ?, ?)';
-  db.query(sql, [nama_pasien, nik, tgl_lahir, jenis_kelamin, alamat || '-', no_telpon], (err, result) => {
+  let { nama_pasien, nik, tgl_lahir, jenis_kelamin, alamat, no_telepon } = req.body;
+  
+  // Mapping jenis kelamin agar sesuai dengan ENUM database
+  if (jenis_kelamin === 'L') jenis_kelamin = 'Laki-laki';
+  if (jenis_kelamin === 'P') jenis_kelamin = 'Perempuan';
+
+  const sql = 'INSERT INTO pasien (nama_pasien, nik, tgl_lahir, jenis_kelamin, alamat, no_telepon) VALUES (?, ?, ?, ?, ?, ?)';
+  db.query(sql, [nama_pasien, nik, tgl_lahir, jenis_kelamin, alamat || '-', no_telepon], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: 'Pasien berhasil ditambahkan', id_pasien: result.insertId });
   });
@@ -21,9 +26,14 @@ exports.createPasien = (req, res) => {
 // PUT /pasien/:id
 exports.updatePasien = (req, res) => {
   const { id } = req.params;
-  const { nama_pasien, nik, tgl_lahir, jenis_kelamin, alamat, no_telpon } = req.body;
-  const sql = 'UPDATE pasien SET nama_pasien=?, nik=?, tgl_lahir=?, jenis_kelamin=?, alamat=?, no_telpon=? WHERE idpasien=?';
-  db.query(sql, [nama_pasien, nik, tgl_lahir, jenis_kelamin, alamat || '-', no_telpon, id], (err) => {
+  let { nama_pasien, nik, tgl_lahir, jenis_kelamin, alamat, no_telepon } = req.body;
+  
+  // Mapping jenis kelamin agar sesuai dengan ENUM database
+  if (jenis_kelamin === 'L') jenis_kelamin = 'Laki-laki';
+  if (jenis_kelamin === 'P') jenis_kelamin = 'Perempuan';
+
+  const sql = 'UPDATE pasien SET nama_pasien=?, nik=?, tgl_lahir=?, jenis_kelamin=?, alamat=?, no_telepon=? WHERE idpasien=?';
+  db.query(sql, [nama_pasien, nik, tgl_lahir, jenis_kelamin, alamat || '-', no_telepon, id], (err) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: 'Pasien berhasil diupdate' });
   });

@@ -5,6 +5,9 @@ const { login, getUsers, register, editUser, deleteUser } = require('../controll
 const { loginRules, registerRules, editUserRules } = require('../validation/authValidation');
 const { validateIdParam } = require('../validation/sanitizer');
 
+// Health Check (publik, tanpa auth) - digunakan frontend untuk deteksi server mati
+router.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
+
 // Auth Routes
 router.post('/login', loginRules, login);
 router.get('/users', verifyToken, authorizeRoles('admin'), getUsers);
