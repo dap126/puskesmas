@@ -68,10 +68,10 @@ function nextPage() {
                   Nama Dokter
                 </th>
                 <th class="px-5 py-4 font-semibold text-gray-600">
-                  Poli
+                  NIP
                 </th>
                 <th class="px-5 py-4 font-semibold text-gray-600">
-                  Jadwal Praktik
+                  No Telepon
                 </th>
               </tr>
             </thead>
@@ -84,10 +84,10 @@ function nextPage() {
                   {{ doc.nama_dokter }}
                 </td>
                 <td class="px-5 py-4 text-gray-600">
-                  {{ doc.nama_poli || '-' }}
+                  {{ doc.nip || '-' }}
                 </td>
                 <td class="px-5 py-4 text-gray-600 text-sm">
-                  {{ doc.jadwal_praktik }}
+                  {{ doc.no_telepon || '-' }}
                 </td>
               </tr>
               <tr v-if="listDokter.length === 0">

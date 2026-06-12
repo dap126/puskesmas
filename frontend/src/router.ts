@@ -2,7 +2,6 @@ import type { RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
 
 import Dashboard from './views/Dashboard.vue'
-import UIElements from './views/UIElements.vue'
 import Login from './views/Login.vue'
 import Pasien from './views/Pasien.vue'
 import Antrean from './views/Antrean.vue'
@@ -28,11 +27,6 @@ const routes: RouteRecordRaw[] = [
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard,
-  },
-  {
-    path: '/ui-elements',
-    name: 'UIElements',
-    component: UIElements,
   },
   {
     path: '/pasien',

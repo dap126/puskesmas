@@ -12,12 +12,12 @@ const dokterRules = [
     .trim()
     .notEmpty().withMessage('NIP wajib diisi')
     .isLength({ min: 5, max: 30 }).withMessage('NIP harus 5-30 karakter')
-    .isAlphanumeric().withMessage('NIP hanya boleh huruf dan angka'),
+    .matches(/^[a-zA-Z0-9\s\-]+$/).withMessage('NIP hanya boleh berisi huruf, angka, spasi, dan strip (-)'),
 
-  body('no_hp')
+  body('no_telepon')
     .optional({ nullable: true, checkFalsy: true })
     .trim()
-    .matches(/^[0-9+\-() ]{8,20}$/).withMessage('Format nomor HP tidak valid'),
+    .matches(/^[0-9+\-() ]{8,20}$/).withMessage('Format nomor telepon tidak valid'),
 
   body('jadwal_praktik')
     .trim()

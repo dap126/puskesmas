@@ -20,7 +20,7 @@ export default {
         nik: '',
         tgl_lahir: '',
         jenis_kelamin: '',
-        no_telpon: '',
+        no_telepon: '',
         alamat: '',
       },
       currentPage: 1,
@@ -115,7 +115,7 @@ export default {
         nik: '',
         tgl_lahir: '',
         jenis_kelamin: '',
-        no_telpon: '',
+        no_telepon: '',
         alamat: '',
       }
     },
@@ -175,8 +175,8 @@ export default {
         let prefix = 'AN' // default
         if (namaPoli.includes('umum'))
           prefix = 'PU'
-        else if (namaPoli.includes('anak'))
-          prefix = 'PA'
+        else if (namaPoli.includes('kia'))
+          prefix = 'PK'
         else if (namaPoli.includes('gigi'))
           prefix = 'PG'
 
@@ -323,7 +323,7 @@ export default {
                   {{ p.jenis_kelamin }}
                 </td>
                 <td class="px-5 py-4 text-gray-600">
-                  {{ p.no_telepon || p.no_telpon }}
+                  {{ p.no_telepon }}
                 </td>
                 <td class="px-5 py-4 align-middle">
                   <div class="flex justify-center gap-2">
@@ -388,7 +388,7 @@ export default {
 
             <div class="flex flex-col col-span-2 sm:col-span-1">
               <label class="mb-1.5 font-semibold text-gray-700 text-sm">NIK</label>
-              <input v-model="pasien.nik" type="text" placeholder="Masukkan NIK" required class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none">
+              <input v-model="pasien.nik" type="text" placeholder="Masukkan NIK (16 digit)" minlength="16" maxlength="16" required class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none">
             </div>
 
             <div class="flex flex-col col-span-2 sm:col-span-1">
@@ -413,7 +413,7 @@ export default {
 
             <div class="flex flex-col col-span-2">
               <label class="mb-1.5 font-semibold text-gray-700 text-sm">No Telepon</label>
-              <input v-model="pasien.no_telpon" type="text" required class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none">
+              <input v-model="pasien.no_telepon" type="text" required class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none">
             </div>
 
             <div class="flex flex-col col-span-2">

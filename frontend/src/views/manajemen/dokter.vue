@@ -13,8 +13,9 @@ const showModal = ref(false)
 const form = ref({
   nama_dokter: '',
   nip: '',
-  no_telpon: '',
-  hari_praktik: '',
+  no_telepon: '',
+  hari_praktik_awal: '',
+  hari_praktik_akhir: '',
   jam_mulai: '',
   jam_selesai: '',
   poli_id_poli: '',
@@ -46,8 +47,9 @@ function openAddModal() {
   form.value = {
     nama_dokter: '',
     nip: '',
-    no_telpon: '',
-    hari_praktik: '',
+    no_telepon: '',
+    hari_praktik_awal: '',
+    hari_praktik_akhir: '',
     jam_mulai: '',
     jam_selesai: '',
     poli_id_poli: '',
@@ -66,20 +68,28 @@ async function handleSubmitDokter() {
   pesanError.value = ''
 
   try {
+    let hariStr = form.value.hari_praktik_awal
+    if (form.value.hari_praktik_akhir) {
+      hariStr += ` - ${form.value.hari_praktik_akhir}`
+    }
+
     await dokterService.createDokter({
       nama_dokter: form.value.nama_dokter,
       nip: form.value.nip,
-      no_telpon: form.value.no_telpon,
-      jadwal_praktik: `${form.value.hari_praktik}, ${form.value.jam_mulai} - ${form.value.jam_selesai}`,
+      no_telepon: form.value.no_telepon,
+      jadwal_praktik: `${hariStr}, ${form.value.jam_mulai} - ${form.value.jam_selesai}`,
       users_idusers: null,
       poli_id_poli: Number(form.value.poli_id_poli),
     })
 
     pesanSukses.value = 'Data dokter berhasil ditambahkan'
     fetchDokter()
+    closeModal()
+    
+    // Auto hapus pesan sukses setelah 3 detik
     setTimeout(() => {
-      closeModal()
-    }, 1500)
+      pesanSukses.value = ''
+    }, 3000)
   }
   catch (error) {
     pesanError.value = error.message
@@ -181,7 +191,7 @@ function nextPage() {
                   NIP
                 </th>
                 <th class="px-5 py-4 font-semibold text-gray-600">
-                  No Telpon
+                  No Telepon
                 </th>
                 <th class="px-5 py-4 font-semibold text-gray-600">
                   Poli
@@ -206,7 +216,7 @@ function nextPage() {
                   {{ doc.nip }}
                 </td>
                 <td class="px-5 py-4 text-gray-600 text-sm">
-                  {{ doc.no_telpon || '-' }}
+                  {{ doc.no_telepon || '-' }}
                 </td>
                 <td class="px-5 py-4 text-gray-600">
                   {{ doc.nama_poli || '-' }}
@@ -293,52 +303,71 @@ function nextPage() {
               >
             </div>
 
+            <div class="flex flex-col col-span-2 sm:col-span-1">
+              <label class="mb-1.5 font-semibold text-gray-700 text-sm">NIP</label>
+              <input
+                v-model="form.nip"
+                placeholder="Masukkan NIP"
+                required
+                class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
+              >
+            </div>
+
+            <div class="flex flex-col col-span-2 sm:col-span-1">
+              <label class="mb-1.5 font-semibold text-gray-700 text-sm">No Telepon (Opsional)</label>
+              <input
+                v-model="form.no_telepon"
+                placeholder="Masukkan No Telepon"
+                class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
+              >
+            </div>
+
             <div class="flex flex-col col-span-2">
               <label class="mb-1.5 font-semibold text-gray-700 text-sm">Jadwal Praktik</label>
               <div class="flex gap-2">
                 <select
-                  v-model="form.hari_praktik"
+                  v-model="form.hari_praktik_awal"
                   required
-                  class="w-1/2 px-4 py-2.5 rounded-lg border border-gray-300 transition focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none bg-white"
+                  class="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 transition focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none bg-white"
                 >
-                  <option disabled value="">
-                    Pilih Hari
-                  </option>
-                  <option value="Senin">
-                    Senin
-                  </option>
-                  <option value="Selasa">
-                    Selasa
-                  </option>
-                  <option value="Rabu">
-                    Rabu
-                  </option>
-                  <option value="Kamis">
-                    Kamis
-                  </option>
-                  <option value="Jumat">
-                    Jumat
-                  </option>
-                  <option value="Sabtu">
-                    Sabtu
-                  </option>
-                  <option value="Minggu">
-                    Minggu
-                  </option>
+                  <option disabled value="">--</option>
+                  <option value="Senin">Senin</option>
+                  <option value="Selasa">Selasa</option>
+                  <option value="Rabu">Rabu</option>
+                  <option value="Kamis">Kamis</option>
+                  <option value="Jumat">Jumat</option>
+                  <option value="Sabtu">Sabtu</option>
+                  <option value="Minggu">Minggu</option>
+                </select>
+
+                <span class="self-center text-gray-500 font-medium">-</span>
+
+                <select
+                  v-model="form.hari_praktik_akhir"
+                  class="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 transition focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none bg-white"
+                >
+                  <option value="">--</option>
+                  <option value="Senin">Senin</option>
+                  <option value="Selasa">Selasa</option>
+                  <option value="Rabu">Rabu</option>
+                  <option value="Kamis">Kamis</option>
+                  <option value="Jumat">Jumat</option>
+                  <option value="Sabtu">Sabtu</option>
+                  <option value="Minggu">Minggu</option>
                 </select>
 
                 <input
                   v-model="form.jam_mulai"
                   type="time"
                   required
-                  class="w-1/4 px-4 py-2.5 rounded-lg border border-gray-300 transition focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
+                  class="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 transition focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
                 >
                 <span class="self-center text-gray-500 font-medium">-</span>
                 <input
                   v-model="form.jam_selesai"
                   type="time"
                   required
-                  class="w-1/4 px-4 py-2.5 rounded-lg border border-gray-300 transition focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
+                  class="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 transition focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
                 >
               </div>
             </div>
@@ -363,11 +392,8 @@ function nextPage() {
               </select>
             </div>
 
-            <div v-if="pesanSukses || pesanError" class="col-span-2 mt-2">
-              <p v-if="pesanSukses" class="text-emerald-600 text-sm font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">
-                {{ pesanSukses }}
-              </p>
-              <p v-if="pesanError" class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
+            <div v-if="pesanError" class="col-span-2 mt-2">
+              <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
                 {{ pesanError }}
               </p>
             </div>

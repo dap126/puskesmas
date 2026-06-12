@@ -9,7 +9,7 @@ export interface Pasien {
   tgl_lahir: number | string
   jenis_kelamin: string
   alamat?: string
-  no_telpon?: string
+  no_telepon?: string
 }
 const API_URL_PASIEN = 'http://localhost:3000/api/pasien'
 

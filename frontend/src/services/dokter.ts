@@ -5,7 +5,7 @@ export interface Dokter {
   id_dokter?: number
   nama_dokter: string
   nip: number
-  no_telpon: number
+  no_telepon: number
   jadwal_praktik: string
   status: string
   users_idusers: number

@@ -7,6 +7,7 @@ exports.getAllAntrean = (req, res) => {
     FROM antrean a
     JOIN pasien p ON a.pasien_idpasien = p.idpasien
     JOIN poli po ON a.poli_id_poli = po.id_poli
+    WHERE DATE(a.tgl_antrean) = CURDATE()
     ORDER BY a.tgl_antrean DESC, a.no_antrean ASC
   `;
   db.query(sql, (err, results) => {

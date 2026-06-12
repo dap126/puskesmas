@@ -137,6 +137,7 @@ function tambahObat() {
     jumlah: '',
     dosis1: '',
     dosis2: '',
+    keterangan: '',
   })
 }
 
@@ -180,7 +181,7 @@ async function simpan() {
       const daftarObat = resep.value.map(item => ({
         obat_id_obat: Number(item.obat),
         jumlah_obat: Number(item.jumlah),
-        dosis: `${item.dosis1}x${item.dosis2}`,
+        dosis: `${item.dosis1}x${item.dosis2} ${item.keterangan}`.trim(),
       }))
 
       await resepService.createResepTransaction({
@@ -288,7 +289,7 @@ onMounted(() => {
             <input
               v-model="form.tinggi_badan"
               type="number"
-              placeholder="contoh: 170"
+              placeholder="170"
               class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
             >
           </div>
@@ -298,7 +299,7 @@ onMounted(() => {
             <input
               v-model="form.berat_badan"
               type="number"
-              placeholder="contoh: 65"
+              placeholder="65"
               class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
             >
           </div>
@@ -360,6 +361,9 @@ onMounted(() => {
                 <th class="px-5 py-3 font-semibold text-gray-600">
                   Dosis
                 </th>
+                <th class="px-5 py-3 font-semibold text-gray-600">
+                  Keterangan
+                </th>
                 <th class="px-5 py-3 font-semibold text-gray-600 text-center w-24">
                   Aksi
                 </th>
@@ -386,6 +390,14 @@ onMounted(() => {
                     <span class="text-gray-500 font-bold">x</span>
                     <input v-model="item.dosis2" type="number" min="1" placeholder="1" class="px-3 py-2 rounded-lg border border-gray-300 transition w-16 focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none text-sm text-center">
                   </div>
+                </td>
+                <td class="px-5 py-3">
+                  <select v-model="item.keterangan" class="px-3 py-2 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none bg-white text-sm">
+                    <option disabled value="">--</option>
+                    <option value="sesudah makan">Sesudah Makan</option>
+                    <option value="sebelum makan">Sebelum Makan</option>
+                    <option value="saat makan">Saat Makan</option>
+                  </select>
                 </td>
                 <td class="px-5 py-3 align-middle text-center">
                   <button class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition" title="Hapus Obat" @click="hapusObat(index)">

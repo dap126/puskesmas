@@ -1,7 +1,18 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import { useAuth } from '../services/auth'
 
 const { username, password, errorMessage, isLoading, login } = useAuth()
+
+// Tampilkan pesan jika user di-logout otomatis oleh sistem
+const logoutReason = ref('')
+onMounted(() => {
+  const reason = sessionStorage.getItem('logout_reason')
+  if (reason) {
+    logoutReason.value = reason
+    sessionStorage.removeItem('logout_reason')
+  }
+})
 </script>
 
 <template>
@@ -31,6 +42,14 @@ const { username, password, errorMessage, isLoading, login } = useAuth()
       </div>
 
       <form class="mt-4" @submit.prevent="login">
+        <!-- Banner: logout otomatis oleh sistem (server mati / token expired) -->
+        <div v-if="logoutReason" class="p-3 mb-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2" role="alert">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+          </svg>
+          {{ logoutReason }}
+        </div>
+
         <div v-if="errorMessage" class="p-3 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
           {{ errorMessage }}
         </div>

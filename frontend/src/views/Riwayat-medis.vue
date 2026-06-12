@@ -23,7 +23,8 @@ const editForm = ref({
   diagnosa: '',
   tinggi_badan: '',
   berat_badan: '',
-  tekanan_darah: ''
+  tekanan_darah_sistol: '',
+  tekanan_darah_diastol: ''
 })
 const editResep = ref([])
 
@@ -49,7 +50,8 @@ async function fetchRiwayat() {
         tinggi_badan: item.tinggi_badan,
         berat_badan: item.berat_badan,
         tekanan_darah: item.tekanan_darah,
-        status_tebus: item.status_tebus // bisa 'belum', 'sudah', 'batal', atau null/undefined
+        status_tebus: item.status_tebus,
+        status_antrean: item.status_antrean // 'Menunggu', 'Selesai', 'Batal', atau null
       }
     })
   }
@@ -108,13 +110,16 @@ function lihatDetail(item) {
 
 // ---------------- EDIT FUNCTIONALITY ---------------- //
 async function bukaEdit(item) {
+  // Split tekanan darah "120/80" → sistol & diastol
+  const parts = (item.tekanan_darah || '').split('/')
   editForm.value = {
     id_rm: item.id,
     keluhan: item.keluhan,
     diagnosa: item.diagnosa,
     tinggi_badan: item.tinggi_badan,
     berat_badan: item.berat_badan,
-    tekanan_darah: item.tekanan_darah
+    tekanan_darah_sistol: parts[0]?.trim() || '',
+    tekanan_darah_diastol: parts[1]?.trim() || ''
   }
   
   editResep.value = []
@@ -122,11 +127,19 @@ async function bukaEdit(item) {
   try {
     const currentResep = await resepService.getResepByRm(item.id)
     if (currentResep && currentResep.length > 0) {
-      editResep.value = currentResep.map(r => ({
-        obat: r.id_obat,
-        jumlah: r.jumlah_obat,
-        dosis: r.dosis
-      }))
+      editResep.value = currentResep.map(r => {
+        // Pisah dosis "3x1 sesudah makan" → dosis + keterangan
+        const dosisFull = r.dosis || ''
+        const keteranganOpts = ['sesudah makan', 'sebelum makan', 'saat makan']
+        const foundKet = keteranganOpts.find(k => dosisFull.toLowerCase().includes(k))
+        const dosisOnly = foundKet ? dosisFull.replace(foundKet, '').trim() : dosisFull
+        return {
+          obat: r.id_obat,
+          jumlah: r.jumlah_obat,
+          dosis: dosisOnly,
+          keterangan: foundKet || 'sesudah makan'
+        }
+      })
     }
   } catch (error) {
     console.error('Gagal mengambil data resep obat', error)
@@ -136,7 +149,7 @@ async function bukaEdit(item) {
 }
 
 function tambahObat() {
-  editResep.value.push({ obat: '', jumlah: '', dosis: '' })
+  editResep.value.push({ obat: '', jumlah: '', dosis: '', keterangan: 'sesudah makan' })
 }
 
 function hapusObat(index) {
@@ -147,13 +160,18 @@ async function simpanEdit() {
   try {
     isSaving.value = true
 
+    // Gabungkan sistol/diastol → "120/80"
+    const tekananDarah = editForm.value.tekanan_darah_sistol && editForm.value.tekanan_darah_diastol
+      ? `${editForm.value.tekanan_darah_sistol}/${editForm.value.tekanan_darah_diastol}`
+      : editForm.value.tekanan_darah_sistol || ''
+
     // 1. Update data rekam medis
     await medisService.updateMedis(editForm.value.id_rm, {
       keluhan: editForm.value.keluhan,
       diagnosa: editForm.value.diagnosa,
       tinggi_badan: Number(editForm.value.tinggi_badan) || 0,
       berat_badan: editForm.value.berat_badan ? Number(editForm.value.berat_badan) : null,
-      tekanan_darah: editForm.value.tekanan_darah
+      tekanan_darah: tekananDarah
     })
 
     // 2. Update data resep obat
@@ -162,7 +180,7 @@ async function simpanEdit() {
       .map(item => ({
         obat_id_obat: Number(item.obat),
         jumlah_obat: Number(item.jumlah),
-        dosis: item.dosis
+        dosis: item.keterangan ? `${item.dosis} ${item.keterangan}`.trim() : item.dosis
       }))
 
     await resepService.updateResepByRm(editForm.value.id_rm, { daftar_obat })
@@ -267,8 +285,8 @@ onMounted(() => {
                       </svg>
                     </button>
 
-                    <!-- Tombol Edit: hanya muncul jika status_tebus bukan 'sudah' -->
-                    <button v-if="item.status_tebus !== 'sudah'" class="bg-orange-500 text-white p-1.5 rounded hover:bg-orange-600 shadow-sm transition" title="Edit Obat" @click="bukaEdit(item)">
+                    <!-- Tombol Edit: terkunci jika resep sudah ditebus atau dibatalkan -->
+                    <button v-if="!['sudah', 'batal'].includes(item.status_tebus)" class="bg-orange-500 text-white p-1.5 rounded hover:bg-orange-600 shadow-sm transition" title="Edit Rekam Medis" @click="bukaEdit(item)">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                       </svg>
@@ -393,7 +411,19 @@ onMounted(() => {
                 </div>
                 <div class="flex flex-col">
                   <label class="mb-1.5 font-semibold text-gray-700 text-sm">Tekanan Darah</label>
-                  <input v-model="editForm.tekanan_darah" class="px-4 py-2.5 rounded-lg border border-gray-300 w-full focus:border-indigo-600 outline-none">
+                  <div class="flex items-center gap-2">
+                    <input
+                      v-model="editForm.tekanan_darah_sistol"
+                      type="number"
+                      class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
+                    >
+                    <span class="text-gray-500 font-bold text-lg">/</span>
+                    <input
+                      v-model="editForm.tekanan_darah_diastol"
+                      type="number"
+                        class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
+                    >
+                  </div>
                 </div>
               </div>
 
@@ -421,7 +451,8 @@ onMounted(() => {
                     <tr class="border-b border-gray-200">
                       <th class="pb-2 font-semibold text-gray-600 text-sm">Obat</th>
                       <th class="pb-2 font-semibold text-gray-600 text-sm w-24">Jumlah</th>
-                      <th class="pb-2 font-semibold text-gray-600 text-sm w-32">Dosis</th>
+                      <th class="pb-2 font-semibold text-gray-600 text-sm w-28">Dosis</th>
+                      <th class="pb-2 font-semibold text-gray-600 text-sm">Keterangan</th>
                       <th class="pb-2 font-semibold text-gray-600 text-sm text-center w-16">Aksi</th>
                     </tr>
                   </thead>
@@ -441,6 +472,13 @@ onMounted(() => {
                       <td class="py-2 pr-2">
                         <input v-model="item.dosis" placeholder="3x1" class="px-3 py-2 rounded-lg border border-gray-300 w-full focus:border-indigo-600 outline-none text-sm">
                       </td>
+                      <td class="py-2 pr-2">
+                        <select v-model="item.keterangan" class="px-3 py-2 rounded-lg border border-gray-300 w-full focus:border-indigo-600 outline-none text-sm bg-white">
+                          <option value="sesudah makan">Sesudah Makan</option>
+                          <option value="sebelum makan">Sebelum Makan</option>
+                          <option value="saat makan">Saat Makan</option>
+                        </select>
+                      </td>
                       <td class="py-2 text-center">
                         <button class="bg-red-100 text-red-600 p-1.5 rounded hover:bg-red-200 transition" @click="hapusObat(index)" title="Hapus">
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
@@ -450,7 +488,7 @@ onMounted(() => {
                       </td>
                     </tr>
                     <tr v-if="editResep.length === 0">
-                      <td colspan="4" class="text-center py-4 text-sm text-gray-500">
+                      <td colspan="5" class="text-center py-4 text-sm text-gray-500">
                         Tidak ada resep obat.
                       </td>
                     </tr>

@@ -97,21 +97,83 @@ exports.createDetailResep = (req, res) => {
   });
 };
 
-// PATCH /resep-obat/:id/batal  — soft delete: set status_tebus = 'batal'
+// PATCH /resep-obat/:id/batal  — soft delete: set status_tebus = 'batal' + kembalikan stok
 exports.batalResep = (req, res) => {
   const { id } = req.params; // id_resep dari resep_obat
-  db.query(
-    "UPDATE resep_obat SET status_tebus = 'batal' WHERE id_resep = ?",
-    [id],
-    (err, result) => {
-      if (err) return res.status(500).json({ error: 'Gagal membatalkan resep' });
-      if (result.affectedRows === 0) return res.status(404).json({ message: 'Resep tidak ditemukan' });
-      res.json({ message: 'Resep berhasil dibatalkan' });
-    }
-  );
+
+  // Cek status saat ini
+  db.query('SELECT status_tebus FROM resep_obat WHERE id_resep = ?', [id], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Gagal cek status resep' });
+    if (result.length === 0) return res.status(404).json({ message: 'Resep tidak ditemukan' });
+
+    const statusLama = result[0].status_tebus;
+
+    // Ambil detail obat untuk kembalikan stok (hanya jika statusnya 'sudah' yang perlu dikembalikan)
+    db.query(
+      'SELECT obat_id_obat, jumlah_obat FROM detail_resep WHERE resep_obat_id_resep = ?',
+      [id],
+      (err, details) => {
+        if (err) return res.status(500).json({ error: 'Gagal ambil detail resep' });
+
+        db.beginTransaction((err) => {
+          if (err) return res.status(500).json({ error: 'Gagal memulai transaksi' });
+
+          // Set status batal
+          db.query(
+            "UPDATE resep_obat SET status_tebus = 'batal' WHERE id_resep = ?",
+            [id],
+            (err) => {
+              if (err) return db.rollback(() =>
+                res.status(500).json({ error: 'Gagal membatalkan resep' })
+              );
+
+              // Jika sebelumnya 'sudah' ditebus, kembalikan stok
+              if (statusLama === 'sudah' && details.length > 0) {
+                let completed = 0;
+                let hasError = false;
+
+                for (const item of details) {
+                  db.query(
+                    'UPDATE obat SET stok = stok + ? WHERE id_obat = ?',
+                    [item.jumlah_obat, item.obat_id_obat],
+                    (err) => {
+                      if (hasError) return;
+                      if (err) {
+                        hasError = true;
+                        return db.rollback(() =>
+                          res.status(500).json({ error: 'Gagal mengembalikan stok obat' })
+                        );
+                      }
+                      completed++;
+                      if (completed === details.length) {
+                        db.commit((err) => {
+                          if (err) return db.rollback(() =>
+                            res.status(500).json({ error: 'Gagal commit transaksi' })
+                          );
+                          res.json({ message: 'Resep berhasil dibatalkan dan stok dikembalikan' });
+                        });
+                      }
+                    }
+                  );
+                }
+              } else {
+                // Tidak ada stok yang perlu dikembalikan
+                db.commit((err) => {
+                  if (err) return db.rollback(() =>
+                    res.status(500).json({ error: 'Gagal commit transaksi' })
+                  );
+                  res.json({ message: 'Resep berhasil dibatalkan' });
+                });
+              }
+            }
+          );
+        });
+      }
+    );
+  });
 };
 
-// PATCH /resep-obat/:id/status  — toggle antara 'belum' dan 'sudah'
+// PATCH /resep-obat/:id/status  — toggle antara 'belum' dan 'sudah', dengan update stok
 exports.updateStatusTebus = (req, res) => {
   const { id } = req.params; // id_resep dari resep_obat
   const { status_tebus } = req.body;
@@ -120,15 +182,80 @@ exports.updateStatusTebus = (req, res) => {
     return res.status(400).json({ message: 'Status tidak valid. Gunakan: belum atau sudah' });
   }
 
-  db.query(
-    'UPDATE resep_obat SET status_tebus = ? WHERE id_resep = ?',
-    [status_tebus, id],
-    (err, result) => {
-      if (err) return res.status(500).json({ error: 'Gagal update status tebus' });
-      if (result.affectedRows === 0) return res.status(404).json({ message: 'Resep tidak ditemukan' });
-      res.json({ message: `Status tebus berhasil diubah menjadi: ${status_tebus}` });
+  // Cek status saat ini untuk mencegah double-reduce / double-restore stok
+  db.query('SELECT status_tebus FROM resep_obat WHERE id_resep = ?', [id], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Gagal cek status resep' });
+    if (result.length === 0) return res.status(404).json({ message: 'Resep tidak ditemukan' });
+
+    const statusLama = result[0].status_tebus;
+
+    // Jika status tidak berubah, tidak perlu lakukan apa-apa
+    if (statusLama === status_tebus) {
+      return res.json({ message: `Status sudah ${status_tebus}` });
     }
-  );
+
+    // Ambil semua detail obat dari resep ini
+    db.query(
+      'SELECT obat_id_obat, jumlah_obat FROM detail_resep WHERE resep_obat_id_resep = ?',
+      [id],
+      (err, details) => {
+        if (err) return res.status(500).json({ error: 'Gagal ambil detail resep' });
+
+        db.beginTransaction((err) => {
+          if (err) return res.status(500).json({ error: 'Gagal memulai transaksi' });
+
+          // Update status resep
+          db.query(
+            'UPDATE resep_obat SET status_tebus = ? WHERE id_resep = ?',
+            [status_tebus, id],
+            (err) => {
+              if (err) return db.rollback(() =>
+                res.status(500).json({ error: 'Gagal update status tebus' })
+              );
+
+              // Jika tidak ada detail obat, langsung commit
+              if (details.length === 0) {
+                return db.commit((err) => {
+                  if (err) return db.rollback(() => res.status(500).json({ error: 'Gagal commit' }));
+                  res.json({ message: `Status tebus berhasil diubah menjadi: ${status_tebus}` });
+                });
+              }
+
+              let completed = 0;
+              let hasError = false;
+
+              for (const item of details) {
+                // Kurangi stok jika 'sudah', kembalikan stok jika 'belum'
+                const stokQuery = status_tebus === 'sudah'
+                  ? 'UPDATE obat SET stok = stok - ? WHERE id_obat = ?'
+                  : 'UPDATE obat SET stok = stok + ? WHERE id_obat = ?';
+
+                db.query(stokQuery, [item.jumlah_obat, item.obat_id_obat], (err) => {
+                  if (hasError) return;
+                  if (err) {
+                    hasError = true;
+                    return db.rollback(() =>
+                      res.status(500).json({ error: 'Gagal update stok obat' })
+                    );
+                  }
+
+                  completed++;
+                  if (completed === details.length) {
+                    db.commit((err) => {
+                      if (err) return db.rollback(() =>
+                        res.status(500).json({ error: 'Gagal commit transaksi' })
+                      );
+                      res.json({ message: `Status tebus berhasil diubah menjadi: ${status_tebus}` });
+                    });
+                  }
+                });
+              }
+            }
+          );
+        });
+      }
+    );
+  });
 };
 
 // POST /resep  (simpan pemeriksaan + resep secara transaksional)

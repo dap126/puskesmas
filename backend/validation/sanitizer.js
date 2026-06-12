@@ -5,6 +5,7 @@ const { validationResult } = require('express-validator');
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.error('Validation Error 422:', errors.array());
     return res.status(422).json({
       message: 'Validasi gagal',
       errors: errors.array().map((e) => ({

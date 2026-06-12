@@ -12,7 +12,7 @@ export default {
 
     const form = ref({
       nama_pasien: '',
-      no_telpon: '',
+      no_telepon: '',
       alamat: '',
     })
 
@@ -37,7 +37,7 @@ export default {
       currentPasienId.value = pasien.idpasien
       form.value = {
         nama_pasien: pasien.nama_pasien,
-        no_telpon: pasien.no_telpon || '',
+        no_telepon: pasien.no_telepon || '',
         alamat: pasien.alamat,
       }
       pesanSukses.value = ''
@@ -180,7 +180,7 @@ export default {
               <tr v-for="(pasien, index) in paginatedData" :key="pasien.idpasien" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
                 <td class="px-5 py-4 text-gray-600">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
                 <td class="px-5 py-4 text-gray-800 font-medium">{{ pasien.nama_pasien }}</td>
-                <td class="px-5 py-4 text-gray-600 text-sm">{{ pasien.no_telpon || '-' }}</td>
+                <td class="px-5 py-4 text-gray-600 text-sm">{{ pasien.no_telepon || '-' }}</td>
                 <td class="px-5 py-4 text-gray-600">{{ pasien.alamat || '-' }}</td>
                 <td class="px-5 py-4 align-middle">
                   <div class="flex justify-center gap-2">
@@ -260,7 +260,7 @@ export default {
             <div class="flex flex-col col-span-2">
               <label class="mb-1.5 font-semibold text-gray-700 text-sm">Nomor Telpon</label>
               <input 
-                v-model="form.no_telpon"
+                v-model="form.no_telepon"
                 placeholder="Masukkan Nomor Telpon"
                 required
                 class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
