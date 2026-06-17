@@ -4,10 +4,12 @@ import { useAuth } from '../services/auth'
 
 const { username, password, errorMessage, isLoading, login } = useAuth()
 
-// Tampilkan pesan jika user di-logout otomatis oleh sistem
 const logoutReason = ref('')
+const showPassword = ref(false)
+
 onMounted(() => {
   const reason = sessionStorage.getItem('logout_reason')
+
   if (reason) {
     logoutReason.value = reason
     sessionStorage.removeItem('logout_reason')
@@ -16,82 +18,231 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex items-center justify-center h-screen px-6 bg-gray-200">
-    <div class="w-full max-w-sm p-6 bg-white rounded-md shadow-md">
-      <div class="flex items-center justify-center">
-        <svg
-          class="w-10 h-10"
-          viewBox="0 0 512 512"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+  <div
+    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-100 via-blue-50 to-indigo-200 p-6"
+  >
+    <div
+      class="w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden grid lg:grid-cols-2"
+    >
+
+      <!-- LEFT PANEL -->
+      <div
+        class="hidden lg:flex flex-col justify-center items-center bg-gradient-to-br from-cyan-600 to-indigo-700 text-white p-12"
+      >
+        <div
+          class="w-32 h-32 rounded-full bg-white/20 flex items-center justify-center mb-8"
         >
-          <path
-            d="M364.61 390.213C304.625 450.196 207.37 450.196 147.386 390.213C117.394 360.22 102.398 320.911 102.398 281.6C102.398 242.291 117.394 202.981 147.386 172.989C147.386 230.4 153.6 281.6 230.4 307.2C230.4 256 256 102.4 294.4 76.7999C320 128 334.618 142.997 364.608 172.989C394.601 202.981 409.597 242.291 409.597 281.6C409.597 320.911 394.601 360.22 364.61 390.213Z"
-            fill="#4C51BF"
-            stroke="#4C51BF"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-          <path
-            d="M201.694 387.105C231.686 417.098 280.312 417.098 310.305 387.105C325.301 372.109 332.8 352.456 332.8 332.8C332.8 313.144 325.301 293.491 310.305 278.495C295.309 263.498 288 256 275.2 230.4C256 243.2 243.201 320 243.201 345.6C201.694 345.6 179.2 332.8 179.2 332.8C179.2 352.456 186.698 372.109 201.694 387.105Z"
-            fill="white"
-          />
-        </svg>
-        <span class="text-2xl font-semibold text-gray-700">Puskesmas</span>
+          <span class="text-6xl">🏥</span>
+        </div>
+
+        <h1 class="text-5xl font-bold mb-4">
+          Puskesmas
+        </h1>
+
+        <p class="text-center text-lg text-blue-100 max-w-md">
+          Sistem Informasi Pelayanan Kesehatan Modern untuk mendukung
+          pengelolaan pasien, rekam medis, dan layanan kesehatan secara
+          terintegrasi.
+        </p>
+
+        <div class="mt-12 space-y-5 text-lg">
+          <div class="flex items-center gap-3">
+            <span>✔️</span>
+            <span>Data Pasien Terintegrasi</span>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <span>✔️</span>
+            <span>Rekam Medis Digital</span>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <span>✔️</span>
+            <span>Layanan Kesehatan Modern</span>
+          </div>
+        </div>
       </div>
 
-      <form class="mt-4" @submit.prevent="login">
-        <!-- Banner: logout otomatis oleh sistem (server mati / token expired) -->
-        <div v-if="logoutReason" class="p-3 mb-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2" role="alert">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-          </svg>
+      <!-- RIGHT PANEL -->
+      <div class="p-8 md:p-12 flex flex-col justify-center">
+
+        <div class="text-center mb-8">
+          <div
+            class="w-20 h-20 mx-auto rounded-full bg-cyan-100 flex items-center justify-center mb-4 lg:hidden"
+          >
+            <span class="text-4xl">🏥</span>
+          </div>
+
+          <h2 class="text-3xl font-bold text-gray-800">
+            Selamat Datang
+          </h2>
+
+          <p class="text-gray-500 mt-2">
+            Silakan login untuk melanjutkan
+          </p>
+        </div>
+
+        <!-- ALERT LOGOUT -->
+        <div
+          v-if="logoutReason"
+          class="mb-4 p-4 rounded-xl bg-yellow-50 border border-yellow-300 text-yellow-800"
+        >
           {{ logoutReason }}
         </div>
 
-        <div v-if="errorMessage" class="p-3 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+        <!-- ALERT ERROR -->
+        <div
+          v-if="errorMessage"
+          class="mb-4 p-4 rounded-xl bg-red-50 border border-red-300 text-red-700"
+        >
           {{ errorMessage }}
         </div>
-        <label class="block">
-          <span class="text-sm text-gray-700">Username</span>
-          <input
-            v-model="username"
-            type="text"
-            required
-            class="block w-full mt-1 border-gray-200 rounded-md focus:border-indigo-600 focus:ring focus:ring-opacity-40 focus:ring-indigo-500"
-          >
-        </label>
 
-        <label class="block mt-3">
-          <span class="text-sm text-gray-700">Password</span>
-          <input
-            v-model="password"
-            type="password"
-            required
-            class="block w-full mt-1 border-gray-200 rounded-md focus:border-indigo-600 focus:ring focus:ring-opacity-40 focus:ring-indigo-500"
-          >
-        </label>
+        <form @submit.prevent="login">
 
-        <div class="flex items-center justify-between mt-4">
-          <div>
-            <label class="inline-flex items-center">
-              <input type="checkbox" class="text-indigo-600 border-gray-200 rounded-md focus:border-indigo-600 focus:ring focus:ring-opacity-40 focus:ring-indigo-500">
-              <span class="mx-2 text-sm text-gray-600">Remember me</span>
+          <!-- USERNAME -->
+          <div class="mb-5">
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+              Username
             </label>
-          </div>
-        </div>
 
-        <div class="mt-6">
+            <div class="relative">
+              <span
+                class="absolute left-4 top-3.5 text-gray-400"
+              >
+                👤
+              </span>
+
+              <input
+                v-model="username"
+                type="text"
+                required
+                placeholder="Masukkan Username"
+                class="
+                  w-full
+                  pl-12
+                  pr-4
+                  py-3
+                  rounded-xl
+                  border
+                  border-gray-300
+                  focus:outline-none
+                  focus:ring-4
+                  focus:ring-cyan-200
+                  focus:border-cyan-500
+                  transition
+                "
+              >
+            </div>
+          </div>
+
+          <!-- PASSWORD -->
+          <div class="mb-5">
+            <label class="block mb-2 text-sm font-semibold text-gray-700">
+              Password
+            </label>
+
+            <div class="relative">
+              <span
+                class="absolute left-4 top-3.5 text-gray-400"
+              >
+                🔒
+              </span>
+
+              <input
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
+                required
+                placeholder="Masukkan Password"
+                class="
+                  w-full
+                  pl-12
+                  pr-12
+                  py-3
+                  rounded-xl
+                  border
+                  border-gray-300
+                  focus:outline-none
+                  focus:ring-4
+                  focus:ring-cyan-200
+                  focus:border-cyan-500
+                  transition
+                "
+              >
+
+              <button
+                type="button"
+                @click="showPassword = !showPassword"
+                class="
+                  absolute
+                  right-4
+                  top-3
+                  text-gray-500
+                  hover:text-cyan-600
+                "
+              >
+                {{ showPassword ? '🙈' : '👁️' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- REMEMBER -->
+          <div class="flex justify-between items-center mb-6">
+            <label class="flex items-center">
+              <input
+                type="checkbox"
+                class="
+                  rounded
+                  text-cyan-600
+                  focus:ring-cyan-500
+                "
+              >
+
+              <span class="ml-2 text-sm text-gray-600">
+                Remember Me
+              </span>
+            </label>
+
+            <a
+              href="#"
+              class="text-sm text-cyan-600 hover:text-cyan-700"
+            >
+              Lupa Password?
+            </a>
+          </div>
+
+          <!-- BUTTON -->
           <button
             type="submit"
             :disabled="isLoading"
-            class="w-full px-4 py-2 text-sm text-center text-white bg-indigo-600 rounded-md focus:outline-none hover:bg-indigo-500 disabled:opacity-50"
+            class="
+              w-full
+              py-3
+              rounded-xl
+              text-white
+              font-semibold
+              bg-gradient-to-r
+              from-cyan-600
+              to-indigo-600
+              hover:from-cyan-700
+              hover:to-indigo-700
+              hover:shadow-xl
+              hover:scale-[1.02]
+              transition-all
+              duration-300
+              disabled:opacity-50
+            "
           >
-            {{ isLoading ? 'Signing in...' : 'Sign in' }}
+            {{ isLoading ? 'Signing In...' : 'Masuk ke Sistem' }}
           </button>
+
+        </form>
+
+        <div class="mt-8 text-center text-sm text-gray-400">
         </div>
-      </form>
+
+      </div>
+
     </div>
   </div>
 </template>
