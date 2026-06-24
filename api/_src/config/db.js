@@ -9,17 +9,18 @@ const db = mysql.createPool({
   port: process.env.DB_PORT,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
+  database: process.env.DB_NAME,
   ssl: {
     rejectUnauthorized: false
   }
 });
 
-db.connect((err) => {
+db.getConnection((err, connection) => {
   if (err) {
     console.error('Error connecting to MySQL database:', err.message);
     process.exit(1);
   }
+  if (connection) connection.release();
   console.log('Connected to MySQL database:', process.env.DB_NAME);
 });
 
