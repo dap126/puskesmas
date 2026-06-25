@@ -18,7 +18,7 @@ const db = mysql.createPool({
 db.getConnection((err, connection) => {
   if (err) {
     console.error('Error connecting to MySQL database:', err.message);
-    process.exit(1);
+    // process.exit(1); // Jangan matikan server jika gagal konek (agar error bisa dilihat di endpoint)
   }
   if (connection) connection.release();
   console.log('Connected to MySQL database:', process.env.DB_NAME);
