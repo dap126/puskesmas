@@ -3,16 +3,16 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const db = require('./config/db');
-const authRoutes = require('./routes/auth');
-const dashboardRoutes = require('./routes/dashboard');
-const antreanRoutes = require('./routes/antrean');
-const dokterRoutes = require('./routes/dokter');
-const medisRoutes = require('./routes/medis');
-const pasienRoutes = require('./routes/pasien');
-const obatRoutes = require('./routes/obat');
-const resepRoutes = require('./routes/resep');
-const laporanRoutes = require('./routes/laporan');
+const db = require('./_src/config/db');
+const authRoutes = require('./_src/routes/auth');
+const dashboardRoutes = require('./_src/routes/dashboard');
+const antreanRoutes = require('./_src/routes/antrean');
+const dokterRoutes = require('./_src/routes/dokter');
+const medisRoutes = require('./_src/routes/medis');
+const pasienRoutes = require('./_src/routes/pasien');
+const obatRoutes = require('./_src/routes/obat');
+const resepRoutes = require('./_src/routes/resep');
+const laporanRoutes = require('./_src/routes/laporan');
 
 dotenv.config();
 
@@ -69,6 +69,6 @@ app.use('/api/laporan', laporanRoutes);
 
 const PORT = process.env.PORT || 3000;
 
-// app.listen(PORT, () => {
-//   console.log(`Server is running on port ${PORT}`);
-// });
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
