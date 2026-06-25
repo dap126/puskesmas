@@ -69,9 +69,6 @@ app.use('/api/laporan', laporanRoutes);
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
 
 // Endpoint tes koneksi database langsung dari Vercel
 app.get('/api/test-db', (req, res) => {
@@ -90,3 +87,5 @@ app.get('/api/test-db', (req, res) => {
     });
   });
 });
+
+module.exports = app;
