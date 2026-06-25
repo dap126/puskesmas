@@ -7,7 +7,7 @@ const dataObat = ref([]);
 onMounted(async () => {
   try {
     const token = localStorage.getItem('token');
-    const response = await axios.get('http://localhost:3000/api/laporan/obat', {
+    const response = await axios.get('/api/laporan/obat', {
       headers: { Authorization: `Bearer ${token}` }
     });
     

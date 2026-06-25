@@ -12,7 +12,7 @@ export interface Dokter {
   poli_id_poli: number
   nama_poli?: string
 }
-const API_URL = 'http://localhost:3000/api/dokter'
+const API_URL = '/api/dokter'
 
 export const dokterService = {
   // Ambil semua data dokter

@@ -8,7 +8,7 @@ export interface Obat {
   satuan: string
 }
 
-const API_URL_OBAT = 'http://localhost:3000/api/obat'
+const API_URL_OBAT = '/api/obat'
 
 export const obatService = {
   async getAllObat(): Promise<Obat[]> {
@@ -27,8 +27,8 @@ export const obatService = {
   },
 }
 
-const API_URL_DETAILRESEP = 'http://localhost:3000/api/detail-resep'
-const API_URL_RESEPOBAT   = 'http://localhost:3000/api/resep-obat'
+const API_URL_DETAILRESEP = '/api/detail-resep'
+const API_URL_RESEPOBAT   = '/api/resep-obat'
 
 export interface DetailResep {
   id_detail?: number

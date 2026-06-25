@@ -9,7 +9,7 @@ const errorMsg = ref('');
 onMounted(async () => {
   try {
     const token = localStorage.getItem('token');
-    const response = await axios.get('http://localhost:3000/api/laporan/kunjungan', {
+    const response = await axios.get('/api/laporan/kunjungan', {
       headers: { Authorization: `Bearer ${token}` }
     });
     

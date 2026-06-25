@@ -18,7 +18,7 @@ const chartColors = [
 onMounted(async () => {
   try {
     const token = localStorage.getItem('token');
-    const response = await axios.get('http://localhost:3000/api/laporan/penyakit', {
+    const response = await axios.get('/api/laporan/penyakit', {
       headers: { Authorization: `Bearer ${token}` }
     });
     

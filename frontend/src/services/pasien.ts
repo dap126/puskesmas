@@ -11,7 +11,7 @@ export interface Pasien {
   alamat?: string
   no_telepon?: string
 }
-const API_URL_PASIEN = 'http://localhost:3000/api/pasien'
+const API_URL_PASIEN = '/api/pasien'
 
 // Service Pasien
 export const pasienService = {
@@ -47,7 +47,7 @@ export interface Antrean {
   poli_id_poli: number
 }
 
-const API_URL_ANTREAN = 'http://localhost:3000/api/antrean'
+const API_URL_ANTREAN = '/api/antrean'
 
 // Service Antrean
 export const antreanService = {

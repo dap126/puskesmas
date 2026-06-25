@@ -15,19 +15,19 @@ onMounted(async () => {
   try {
     const token = localStorage.getItem('token');
     // Fetch Ringkasan Umum (Kunjungan dsb)
-    const resRingkasan = await axios.get('http://localhost:3000/api/laporan/ringkasan', {
+    const resRingkasan = await axios.get('/api/laporan/ringkasan', {
       headers: { Authorization: `Bearer ${token}` }
     });
     const dataRingkasan = resRingkasan.data.data;
     
     // Fetch Obat for counting low stock
-    const resObat = await axios.get('http://localhost:3000/api/laporan/obat', {
+    const resObat = await axios.get('/api/laporan/obat', {
       headers: { Authorization: `Bearer ${token}` }
     });
     const obatLimit = resObat.data.data.filter(o => o.stok < 10).length;
 
     // Fetch Penyakit for top disease
-    const resPenyakit = await axios.get('http://localhost:3000/api/laporan/penyakit', {
+    const resPenyakit = await axios.get('/api/laporan/penyakit', {
       headers: { Authorization: `Bearer ${token}` }
     });
     const penyakitTertinggi = resPenyakit.data.data.length > 0 ? resPenyakit.data.data[0] : null;

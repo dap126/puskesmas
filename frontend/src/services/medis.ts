@@ -12,7 +12,7 @@ export interface medis {
   dokter_id_dokter: string
 }
 
-const API_URL_MEDIS = 'http://localhost:3000/api/medis'
+const API_URL_MEDIS = '/api/medis'
 
 export const medisService = {
   // Ambil semua data medis
@@ -39,7 +39,7 @@ export const medisService = {
   },
 }
 
-const API_URL_RESEP = 'http://localhost:3000/api/resep'
+const API_URL_RESEP = '/api/resep'
 export interface resep {
   id_resep: number
   tgl_resep: number
