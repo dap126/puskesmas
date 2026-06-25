@@ -72,3 +72,21 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+// Endpoint tes koneksi database langsung dari Vercel
+app.get('/api/test-db', (req, res) => {
+  db.query('SELECT 1 + 1 AS hasil', (err, rows) => {
+    if (err) {
+      // Jika error, kirim detail errornya ke layar browser
+      return res.status(500).json({ 
+        status: 'Gagal konek ke database Cloud!', 
+        error: err.message 
+      });
+    }
+    // Jika sukses
+    return res.json({ 
+      status: 'Koneksi Database Sukses Aman Bos!', 
+      data: rows 
+    });
+  });
+});
