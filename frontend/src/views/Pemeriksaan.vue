@@ -1,3 +1,5 @@
+src/views/pemeriksaan.vue
+
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -19,6 +21,9 @@ const form = ref({
   pasien_idpasien: '' as number | string,
   dokter_id_dokter: '' as number | string,
 })
+
+const userRole = localStorage.getItem('user_role') || ''
+const isDokter = ref(userRole === 'dokter')
 
 // Tekanan darah split inputs
 const tekananDarahSistol = ref('')
@@ -95,6 +100,42 @@ function selectDokter(d: Dokter) {
   showDokterDropdown.value = false
 }
 
+function onFocusPasien() {
+  if (!searchPasien.value) {
+    filteredPasien.value = pasienList.value
+  } else {
+    filteredPasien.value = pasienList.value.filter(p =>
+      p.nama_pasien.toLowerCase().includes(searchPasien.value.toLowerCase())
+      || (p.nik ? p.nik.toString().includes(searchPasien.value) : false),
+    )
+  }
+  showPasienDropdown.value = true
+}
+
+function onBlurPasien() {
+  setTimeout(() => {
+    showPasienDropdown.value = false
+  }, 200)
+}
+
+function onFocusDokter() {
+  if (isDokter.value) return
+  if (!searchDokter.value) {
+    filteredDokter.value = dokterList.value
+  } else {
+    filteredDokter.value = dokterList.value.filter(d =>
+      d.nama_dokter.toLowerCase().includes(searchDokter.value.toLowerCase()),
+    )
+  }
+  showDokterDropdown.value = true
+}
+
+function onBlurDokter() {
+  setTimeout(() => {
+    showDokterDropdown.value = false
+  }, 200)
+}
+
 async function fetchData() {
   try {
     const [obatData, pasienData, dokterData] = await Promise.all([
@@ -116,6 +157,22 @@ async function fetchData() {
       if (p) {
         form.value.pasien_idpasien = p.idpasien ?? ''
         searchPasien.value = `${p.nama_pasien} (NIK: ${p.nik ?? ''})`
+      }
+    }
+
+    // Auto-fill dokter jika login sebagai dokter
+    // Auto-fill dokter jika login sebagai dokter
+    const userStr = localStorage.getItem('user')
+    if (isDokter.value && userStr) {
+      try {
+        const user = JSON.parse(userStr)
+        const myDokter = dokterData.find((d: any) => d.users_idusers === user.id)
+        if (myDokter) {
+          form.value.dokter_id_dokter = myDokter.id_dokter ?? ''
+          searchDokter.value = myDokter.nama_dokter
+        }
+      } catch (e) {
+        console.error('Failed to parse user from localStorage', e)
       }
     }
   }
@@ -213,14 +270,16 @@ onMounted(() => {
         <h4 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-50 pb-2">
           Informasi Pasien
         </h4>
-        <div class="grid grid-cols-3 gap-5">
-          <div class="col-span-3 sm:col-span-1 relative flex flex-col">
+        <div class="grid grid-cols-2 gap-5">
+          <div class="col-span-2 sm:col-span-1 relative flex flex-col">
             <label class="mb-1.5 font-semibold text-gray-700 text-sm">Pilih Pasien</label>
             <input
               v-model="searchPasien"
               placeholder="Cari nama pasien..."
               class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
               @input="onInputPasien"
+              @focus="onFocusPasien"
+              @blur="onBlurPasien"
             >
             <ul v-if="showPasienDropdown" class="absolute top-full left-0 z-10 w-full bg-white border border-gray-200 mt-1 max-h-48 overflow-y-auto rounded-lg shadow-lg">
               <li v-if="filteredPasien.length === 0" class="p-3 text-gray-500 text-sm">
@@ -237,13 +296,17 @@ onMounted(() => {
             </ul>
           </div>
 
-          <div class="col-span-3 sm:col-span-2 relative flex flex-col">
+          <div class="col-span-2 sm:col-span-1 relative flex flex-col">
             <label class="mb-1.5 font-semibold text-gray-700 text-sm">Pilih Dokter Pemeriksa</label>
             <input
               v-model="searchDokter"
               placeholder="Cari nama dokter..."
+              :disabled="isDokter"
+              :class="isDokter ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''"
               class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
               @input="onInputDokter"
+              @focus="onFocusDokter"
+              @blur="onBlurDokter"
             >
             <ul v-if="showDokterDropdown" class="absolute top-full left-0 z-10 w-full bg-white border border-gray-200 mt-1 max-h-48 overflow-y-auto rounded-lg shadow-lg">
               <li v-if="filteredDokter.length === 0" class="p-3 text-gray-500 text-sm">
