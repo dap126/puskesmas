@@ -162,7 +162,7 @@ function toggleMinimize() {
               </svg>
             </button>
             <ul v-if="!isMinimized && openMenus.medis" class="mt-1 space-y-1 px-2 pt-1 border-l-2 border-gray-100 ml-3">
-              <li>
+              <li v-if="userRole !== 'staff'">
                 <router-link to="/pemeriksaan" :class="route.name === 'Pemeriksaan' ? 'text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-900'" class="flex items-center py-2 px-3 rounded-md text-sm transition-colors">
                   Pemeriksaan
                 </router-link>
@@ -177,7 +177,7 @@ function toggleMinimize() {
               <li class="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
                 Medis
               </li>
-              <li>
+              <li v-if="userRole !== 'staff'">
                 <router-link to="/pemeriksaan" class="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600">
                   Pemeriksaan Dokter
                 </router-link>
