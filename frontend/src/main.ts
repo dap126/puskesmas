@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router'
 import './assets/main.css'
 import axios from 'axios'
+import Swal from 'sweetalert2'
 
 import DashboardLayout from './components/DashboardLayout.vue'
 import EmptyLayout from './components/EmptyLayout.vue'
@@ -41,24 +42,91 @@ function forceLogout(reason: string) {
   window.location.href = '/'
 }
 
-// Setup Axios Interceptor untuk auto-logout
+// Setup Axios Interceptor untuk respon
 axios.interceptors.response.use(
-  response => response,
+  (response) => {
+    // 201: Data berhasil dimasukkan
+    if (response.status === 201) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil',
+        text: 'Data berhasil dimasukkan',
+        confirmButtonColor: '#3085d6',
+      })
+    }
+    return response
+  },
   (error) => {
     // Abaikan request yang sengaja dibatalkan
     if (axios.isCancel(error)) return Promise.reject(error)
 
-    const isLoggedIn = !!localStorage.getItem('token')
-    if (!isLoggedIn) return Promise.reject(error)
+    const status = error.response?.status
+    
+    // Custom Error Pop-ups based on Status Code
+    if (status === 400) {
+      // Data (panggil tabelnya) tidak sesuai dengan format
+      const table = error.response?.data?.table || 'yang kamu masukkan'
+      Swal.fire({
+        icon: 'warning',
+        title: 'Format Salah',
+        text: `Data ${table} tidak sesuai dengan format`,
+        confirmButtonColor: '#f8bb86',
+      })
+    } else if (status === 403) {
+      // Kamu tidak memiliki akses (panggil rolenya yg berhak)
+      let requiredRoles = error.response?.data?.requiredRoles || []
+      
+      // Jika admin bukan satu-satunya role, sembunyikan kata 'admin' dari pesan
+      if (requiredRoles.length > 1) {
+        requiredRoles = requiredRoles.filter((r: string) => r.toLowerCase() !== 'admin')
+      }
+      
+      const requiredRolesStr = requiredRoles.length > 0 ? requiredRoles.join(' / ') : 'role yang berwenang'
+      
+      let textMessage = `Kamu tidak memiliki akses. Fitur ini hanya untuk ${requiredRolesStr}.`
+      
+      // Jika backend mengirim pesan spesifik untuk bisnis logika (misal: "Resep sudah ditebus")
+      if (requiredRoles.length === 0 && (error.response?.data?.message || error.response?.data?.error)) {
+        textMessage = error.response.data.message || error.response.data.error
+      }
 
-    // Token expired / tidak valid (401)
-    if (error.response?.status === 401) {
-      forceLogout('Sesi Anda telah berakhir. Silakan login kembali.')
+      Swal.fire({
+        icon: 'error',
+        title: 'Akses Ditolak',
+        text: textMessage,
+        confirmButtonColor: '#d33',
+      })
+    } else if (status === 401) {
+      // Sesi kamu habis / Kamu belum login.
+      Swal.fire({
+        icon: 'error',
+        title: 'Sesi Habis',
+        text: 'Sesi kamu habis / Kamu belum login. Silakan login kembali.',
+        confirmButtonColor: '#d33',
+      }).then(() => {
+        forceLogout('Sesi Anda telah berakhir. Silakan login kembali.')
+      })
       return Promise.reject(error)
+    } else if (status === 429) {
+      // Terlalu banyak permintaan!
+      Swal.fire({
+        icon: 'warning',
+        title: 'Terlalu Banyak Permintaan',
+        text: 'Terlalu banyak permintaan! Mohon tunggu sebentar',
+        confirmButtonColor: '#f8bb86',
+      })
+    } else if (status && ![401, 403, 400, 429].includes(status)) {
+      // Error lain dari server (misal 500)
+      const errMsg = error.response?.data?.message || error.response?.data?.error || error.message
+      Swal.fire({
+        icon: 'error',
+        title: 'Terjadi Kesalahan',
+        text: errMsg,
+        confirmButtonColor: '#d33',
+      })
     }
 
     // Server benar-benar mati: tidak ada response DAN error adalah network error
-    // (ERR_NETWORK, ERR_CONNECTION_REFUSED, ERR_CONNECTION_RESET, dll)
     const networkErrorCodes = ['ERR_NETWORK', 'ERR_CONNECTION_REFUSED', 'ERR_CONNECTION_RESET', 'ECONNREFUSED']
     if (!error.response && networkErrorCodes.includes(error.code)) {
       forceLogout('Server tidak dapat dijangkau. Sesi Anda telah diakhiri otomatis. Silakan login kembali setelah server aktif.')

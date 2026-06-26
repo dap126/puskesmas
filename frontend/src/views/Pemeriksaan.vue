@@ -5,6 +5,7 @@ import { type Obat, obatService } from '../services/farmasi'
 import { type Pasien, pasienService } from '../services/pasien'
 import { medisService, resepService } from '../services/medis'
 import { type Dokter, dokterService } from '../services/dokter'
+import Swal from 'sweetalert2'
 
 const route = useRoute()
 const router = useRouter()
@@ -23,26 +24,18 @@ const form = ref({
 const tekananDarahSistol = ref('')
 const tekananDarahDiastol = ref('')
 
-// Popup states
-const showPopup = ref(false)
-const popupTitle = ref('')
-const popupMessage = ref('')
-const popupType = ref<'success' | 'error'>('success')
-const popupRedirectUrl = ref('')
 
-function displayPopup(title: string, message: string, type: 'success' | 'error' = 'error', redirectUrl = '') {
-  popupTitle.value = title
-  popupMessage.value = message
-  popupType.value = type
-  popupRedirectUrl.value = redirectUrl
-  showPopup.value = true
-}
-
-function closePopup() {
-  showPopup.value = false
-  if (popupType.value === 'success' && popupRedirectUrl.value) {
-    router.push(popupRedirectUrl.value)
-  }
+function displayPopup(title: string, message: string, type: 'success' | 'error' | 'warning' = 'error', redirectUrl = '') {
+  Swal.fire({
+    icon: type,
+    title: title,
+    text: message,
+    confirmButtonColor: '#3085d6',
+  }).then((result) => {
+    if (result.isConfirmed && type === 'success' && redirectUrl) {
+      router.push(redirectUrl)
+    }
+  })
 }
 
 const resep = ref<any[]>([])
@@ -149,15 +142,15 @@ async function simpan() {
   try {
     // Validasi input
     if (!form.value.pasien_idpasien) {
-      displayPopup('Gagal', 'Silakan pilih pasien dari dropdown!', 'error')
+      displayPopup('Gagal', 'Silakan pilih pasien dari dropdown!', 'warning')
       return
     }
     if (!form.value.dokter_id_dokter) {
-      displayPopup('Gagal', 'Silakan pilih dokter pemeriksa dari dropdown!', 'error')
+      displayPopup('Gagal', 'Silakan pilih dokter pemeriksa dari dropdown!', 'warning')
       return
     }
     if (!form.value.keluhan) {
-      displayPopup('Gagal', 'Keluhan wajib diisi!', 'error')
+      displayPopup('Gagal', 'Keluhan wajib diisi!', 'warning')
       return
     }
 
@@ -425,27 +418,6 @@ onMounted(() => {
           </svg>
           Simpan Pemeriksaan
         </button>
-      </div>
-      
-      <!-- Custom Pop-up Alert -->
-      <div v-if="showPopup" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 text-center">
-          <div v-if="popupType === 'error'" class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-5">
-            <svg class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </div>
-          <div v-else class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-emerald-100 mb-5">
-            <svg class="h-8 w-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h3 class="text-xl font-bold text-gray-900 mb-2">{{ popupTitle }}</h3>
-          <p class="text-gray-600 mb-6">{{ popupMessage }}</p>
-          <button @click="closePopup" class="w-full inline-flex justify-center rounded-xl shadow-sm px-4 py-2.5 bg-indigo-600 text-base font-semibold text-white hover:bg-indigo-700 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Tutup
-          </button>
-        </div>
       </div>
 
     </div>

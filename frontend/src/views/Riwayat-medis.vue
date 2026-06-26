@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { medisService, resepService } from '../services/medis'
 import { obatService } from '../services/farmasi'
+import Swal from 'sweetalert2'
 
 // State untuk tabel & filter
 const rawRiwayat = ref([])
@@ -185,19 +186,39 @@ async function simpanEdit() {
 
     await resepService.updateResepByRm(editForm.value.id_rm, { daftar_obat })
 
-    alert('Perubahan berhasil disimpan!')
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil',
+      text: 'Perubahan berhasil disimpan!',
+      confirmButtonColor: '#3085d6',
+    })
     editModal.value = false
     fetchRiwayat()
   } catch (error) {
     console.error('Gagal menyimpan perubahan', error)
     if (error.response) {
       if (error.response.status === 403) {
-        alert('Gagal: Obat sudah ditebus, tidak bisa diubah lagi.')
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: 'Obat sudah ditebus, tidak bisa diubah lagi.',
+          confirmButtonColor: '#d33',
+        })
       } else {
-        alert(`Gagal: ${error.response.data.error || error.response.data.message || error.message}`)
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: error.response.data.error || error.response.data.message || error.message,
+          confirmButtonColor: '#d33',
+        })
       }
     } else {
-      alert(`Terjadi kesalahan: ${error.message}`)
+      Swal.fire({
+        icon: 'error',
+        title: 'Terjadi Kesalahan',
+        text: error.message,
+        confirmButtonColor: '#d33',
+      })
     }
   } finally {
     isSaving.value = false

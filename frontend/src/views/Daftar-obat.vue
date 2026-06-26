@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { type Obat, obatService } from '../services/farmasi'
+import Swal from 'sweetalert2'
 
 const search = ref('')
+const userRole = localStorage.getItem('user_role') || ''
 const showModal = ref(false)
 const editMode = ref(false)
 const daftarObat = ref<Obat[]>([])
-const pesanSukses = ref('')
-const pesanError = ref('')
 const showConfirmDialog = ref(false)
 const deleteId = ref<number | undefined>(undefined)
 
@@ -62,20 +62,17 @@ function openTambah() {
     stok: 0,
     satuan: '',
   }
-  pesanError.value = ''
   showModal.value = true
 }
 
 function editObat(obat: Obat) {
   editMode.value = true
   form.value = { ...obat }
-  pesanError.value = ''
   showModal.value = true
 }
 
+
 async function simpanObat() {
-  pesanSukses.value = ''
-  pesanError.value = ''
   try {
     if (editMode.value && form.value.id_obat) {
       console.log('Update not implemented in backend')
@@ -88,13 +85,25 @@ async function simpanObat() {
         satuan: form.value.satuan,
       })
     }
-    pesanSukses.value = editMode.value ? 'Data obat berhasil diperbarui' : 'Data obat berhasil ditambahkan'
+    // Note: 201 success is handled globally by main.ts, but if it's 200 we can show success
+    if (editMode.value) {
+       Swal.fire({
+          icon: 'success',
+          title: 'Berhasil',
+          text: 'Data obat berhasil diperbarui',
+          confirmButtonColor: '#3085d6',
+       }).then((result) => {
+         if (result.isConfirmed) {
+           window.location.reload()
+         }
+       })
+    }
+    // Jika create (bukan editMode), main.ts akan merefresh halaman dari response 201
     fetchObat()
     tutupModal()
   }
   catch (error: any) {
     console.error('Gagal menyimpan obat:', error)
-    pesanError.value = error.message || 'Gagal menyimpan obat. Silakan coba lagi.'
   }
 }
 
@@ -113,17 +122,24 @@ function cancelDelete() {
 async function hapusObat() {
   if (!deleteId.value)
     return
-  pesanSukses.value = ''
-  pesanError.value = ''
   try {
     await obatService.deleteObat(deleteId.value)
-    pesanSukses.value = 'Data obat berhasil dihapus'
+    Swal.fire({
+       icon: 'success',
+       title: 'Berhasil',
+       text: 'Data obat berhasil dihapus',
+       confirmButtonColor: '#3085d6',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.reload()
+      }
+    })
     showConfirmDialog.value = false
     deleteId.value = undefined
     fetchObat()
   }
   catch (error: any) {
-    pesanError.value = error.message || 'Gagal menghapus obat'
+    console.error('Gagal menghapus obat:', error)
     showConfirmDialog.value = false
   }
 }
@@ -144,7 +160,11 @@ onMounted(() => {
         <h3 class="text-xl font-semibold text-gray-800">
           Daftar Obat
         </h3>
-        <button class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition transform shadow-md" @click="openTambah">
+        <button
+          v-if="userRole === 'admin' || userRole === 'staff'"
+          class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition transform shadow-md"
+          @click="openTambah"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
@@ -152,19 +172,7 @@ onMounted(() => {
         </button>
       </div>
 
-      <!-- Alert Sukses -->
-      <div v-if="pesanSukses && !showModal && !showConfirmDialog" class="mb-4">
-        <p class="text-emerald-600 text-sm font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">
-          {{ pesanSukses }}
-        </p>
-      </div>
-
-      <!-- Alert Error -->
-      <div v-if="pesanError && !showModal && !showConfirmDialog" class="mb-4">
-        <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
-          {{ pesanError }}
-        </p>
-      </div>
+      <!-- Alerts removed -->
 
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <!-- Search Bar -->
@@ -201,7 +209,7 @@ onMounted(() => {
                 <th class="px-5 py-4 font-semibold text-gray-600">
                   Satuan
                 </th>
-                <th class="px-5 py-4 font-semibold text-gray-600 text-center">
+                <th v-if="userRole === 'admin' || userRole === 'staff'" class="px-5 py-4 font-semibold text-gray-600 text-center">
                   Aksi
                 </th>
               </tr>
@@ -225,7 +233,7 @@ onMounted(() => {
                 <td class="px-5 py-4 text-gray-600">
                   {{ obat.satuan }}
                 </td>
-                <td class="px-5 py-4 align-middle">
+                <td class="px-5 py-4 align-middle" v-if="userRole === 'admin' || userRole === 'staff'">
                   <div class="flex justify-center gap-2">
                     <button class="bg-blue-500 text-white p-1.5 rounded hover:bg-blue-600 shadow-sm transition" title="Edit Obat" @click="editObat(obat)">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
@@ -301,12 +309,7 @@ onMounted(() => {
           </div>
 
           <form class="grid grid-cols-2 gap-5" @submit.prevent="simpanObat">
-            <!-- Alert Error di dalam Modal -->
-            <div v-if="pesanError" class="col-span-2">
-              <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
-                {{ pesanError }}
-              </p>
-            </div>
+            <!-- Alert Error removed -->
 
             <div class="flex flex-col col-span-2">
               <label class="mb-1.5 font-semibold text-gray-700 text-sm">Nama Obat</label>

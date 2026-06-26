@@ -1,13 +1,12 @@
 <script>
 import { computed, onMounted, ref } from 'vue'
 import { pasienService } from '../../services/pasien'
+import Swal from 'sweetalert2'
 
 export default {
   setup() {
     const pasienList = ref([])
     const showModal = ref(false)
-    const pesanSukses = ref('')
-    const pesanError = ref('')
     const currentPasienId = ref(null)
 
     const form = ref({
@@ -29,7 +28,7 @@ export default {
         }))
       }
       catch (error) {
-        pesanError.value = error.message
+        console.error(error.message)
       }
     }
 
@@ -40,8 +39,6 @@ export default {
         no_telepon: pasien.no_telepon || '',
         alamat: pasien.alamat,
       }
-      pesanSukses.value = ''
-      pesanError.value = ''
       showModal.value = true
     }
 
@@ -49,21 +46,23 @@ export default {
       showModal.value = false
     }
 
-    const submitForm = async () => {
-      pesanSukses.value = ''
-      pesanError.value = ''
 
+    const submitForm = async () => {
       try {
         await pasienService.updatePasien(currentPasienId.value, form.value)
-        pesanSukses.value = 'Data pasien berhasil diupdate'
-
-        await fetchPasien()
-        setTimeout(() => {
-          showModal.value = false
-        }, 1500)
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil',
+          text: 'Data pasien berhasil diupdate',
+          confirmButtonColor: '#3085d6',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.reload()
+          }
+        })
       }
       catch (error) {
-        pesanError.value = error.message
+        console.error('Gagal update pasien:', error.message)
       }
     }
 
@@ -81,16 +80,21 @@ export default {
       if (!deleteId.value)
         return
 
-      pesanSukses.value = ''
-      pesanError.value = ''
       try {
         await pasienService.deletePasien(deleteId.value)
-        pesanSukses.value = 'Data pasien berhasil dihapus'
-        showConfirmDialog.value = false
-        await fetchPasien()
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil',
+          text: 'Data pasien berhasil dihapus',
+          confirmButtonColor: '#3085d6',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.reload()
+          }
+        })
       }
       catch (error) {
-        pesanError.value = error.message || 'Gagal menghapus data pasien'
+        console.error('Gagal menghapus pasien:', error.message)
         showConfirmDialog.value = false
       }
     }
@@ -121,8 +125,6 @@ export default {
       pasienList,
       showModal,
       form,
-      pesanSukses,
-      pesanError,
       showConfirmDialog,
       deleteId,
       editPasien,
@@ -150,19 +152,7 @@ export default {
         <h3 class="text-xl font-semibold text-gray-800">Manajemen Pasien</h3>
       </div>
 
-      <!-- Alert Sukses -->
-      <div v-if="pesanSukses && !showModal && !showConfirmDialog" class="mb-4">
-        <p class="text-emerald-600 text-sm font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">
-          {{ pesanSukses }}
-        </p>
-      </div>
-
-      <!-- Alert Error -->
-      <div v-if="pesanError && !showModal && !showConfirmDialog" class="mb-4">
-        <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
-          {{ pesanError }}
-        </p>
-      </div>
+      <!-- Alerts removed -->
 
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div class="overflow-x-auto">
@@ -277,14 +267,7 @@ export default {
               />
             </div>
 
-            <div v-if="pesanSukses || pesanError" class="col-span-2 mt-2">
-              <p v-if="pesanSukses" class="text-emerald-600 text-sm font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">
-                {{ pesanSukses }}
-              </p>
-              <p v-if="pesanError" class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
-                {{ pesanError }}
-              </p>
-            </div>
+            <!-- Alerts removed -->
 
             <div class="col-span-2 flex justify-end gap-3 mt-2 pt-5 border-t border-gray-100">
               <button 

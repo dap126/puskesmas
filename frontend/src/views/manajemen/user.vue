@@ -2,10 +2,9 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { deleteUserAPI, getUsersAPI, registerUserAPI, updateUserAPI } from '../../services/auth'
 import { dokterService } from '../../services/dokter'
+import Swal from 'sweetalert2'
 
 const form = ref({ username: '', nama: '', password: '', role: 'staff' })
-const pesanSukses = ref('')
-const pesanError = ref('')
 const daftarUser = ref([])
 
 // State untuk dokter yang belum terhubung ke akun user
@@ -29,7 +28,6 @@ async function fetchUsers() {
   }
   catch (error) {
     console.error(error.message)
-    pesanError.value = error.message
     if (error.message.includes('Token tidak valid') || error.message.includes('Token tidak ditemukan')) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
@@ -45,8 +43,6 @@ function openAddModal() {
   editUserId.value = null
   form.value = { username: '', nama: '', password: '', role: '' }
   selectedDokterId.value = ''
-  pesanSukses.value = ''
-  pesanError.value = ''
   showModal.value = true
 }
 
@@ -85,37 +81,43 @@ watch(selectedDokterId, (newId) => {
   }
 })
 
-async function handleSubmitUser() {
-  pesanSukses.value = ''
-  pesanError.value = ''
 
+async function handleSubmitUser() {
   try {
+    let successMessage = ''
     if (isEditMode.value) {
       const response = await updateUserAPI(editUserId.value, form.value.username, form.value.nama, form.value.role, form.value.password)
-      pesanSukses.value = response.message
+      successMessage = response.message
     }
     else {
       const response = await registerUserAPI(form.value.username, form.value.nama, form.value.password, form.value.role)
-      pesanSukses.value = response.message
+      successMessage = response.message
 
       // Jika role dokter dan ada dokter yang dipilih, hubungkan
       if (form.value.role === 'dokter' && selectedDokterId.value && response.id) {
         try {
           await dokterService.linkDokterToUser(Number(selectedDokterId.value), response.id)
-          pesanSukses.value += ' & berhasil dihubungkan ke dokter.'
+          successMessage += ' & berhasil dihubungkan ke dokter.'
         }
         catch (linkError) {
           console.error('Gagal menghubungkan dokter:', linkError)
-          pesanError.value = 'User terdaftar, tapi gagal menghubungkan ke data dokter.'
         }
       }
     }
 
-    fetchUsers()
-    closeModal()
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil',
+      text: successMessage,
+      confirmButtonColor: '#3085d6',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.reload()
+      }
+    })
   }
   catch (error) {
-    pesanError.value = error.message
+    console.error('Gagal menyimpan user:', error.message)
     if (error.message.includes('Token tidak valid') || error.message.includes('Token tidak ditemukan')) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
@@ -135,8 +137,6 @@ function handleEditUser(user) {
     password: '',
     role: user.role,
   }
-  pesanSukses.value = ''
-  pesanError.value = ''
   showModal.value = true
 }
 
@@ -153,16 +153,21 @@ function cancelDelete() {
 async function confirmDelete() {
   if (!deleteId.value)
     return
-  pesanSukses.value = ''
-  pesanError.value = ''
   try {
     const response = await deleteUserAPI(deleteId.value)
-    pesanSukses.value = response.message
-    showConfirmDialog.value = false
-    fetchUsers()
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil',
+      text: response.message,
+      confirmButtonColor: '#3085d6',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.reload()
+      }
+    })
   }
   catch (error) {
-    pesanError.value = error.message
+    console.error('Gagal menghapus user:', error.message)
     showConfirmDialog.value = false
     if (error.message.includes('Token tidak valid') || error.message.includes('Token tidak ditemukan')) {
       localStorage.removeItem('token')
@@ -212,19 +217,7 @@ function nextPage() {
         </button>
       </div>
 
-      <!-- Alert Sukses -->
-      <div v-if="pesanSukses && !showModal && !showConfirmDialog" class="mb-4">
-        <p class="text-emerald-600 text-sm font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">
-          {{ pesanSukses }}
-        </p>
-      </div>
-
-      <!-- Alert Error -->
-      <div v-if="pesanError && !showModal && !showConfirmDialog" class="mb-4">
-        <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
-          {{ pesanError }}
-        </p>
-      </div>
+      <!-- Alerts removed -->
 
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div class="overflow-x-auto">
@@ -340,12 +333,7 @@ function nextPage() {
           </div>
 
           <form class="grid grid-cols-2 gap-5" @submit.prevent="handleSubmitUser">
-            <!-- Alert Error di dalam Modal -->
-            <div v-if="pesanError" class="col-span-2">
-              <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
-                {{ pesanError }}
-              </p>
-            </div>
+            <!-- Alert Error removed -->
 
             <div class="flex flex-col col-span-2 sm:col-span-1">
               <label class="mb-1.5 font-semibold text-gray-700 text-sm">Username</label>

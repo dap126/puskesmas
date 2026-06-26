@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { type DetailResep, detailresepService, obatService } from '../services/farmasi'
+import Swal from 'sweetalert2'
 
 // STATE
 const daftarDetail = ref<DetailResep[]>([])
@@ -8,8 +9,7 @@ const search = ref('')
 const showConfirmDialog = ref(false)
 const batalId = ref<number | undefined>(undefined) // id_resep (resep_obat_id_resep)
 const loadingToggle = ref<number | null>(null)      // id_resep yang sedang di-toggle
-const pesanSukses = ref('')
-const pesanError = ref('')
+const userRole = localStorage.getItem('user_role') || ''
 
 // ================= GET DATA =================
 async function fetchDetail() {
@@ -45,12 +45,11 @@ const paginatedData = computed(() => {
 })
 
 // ================= TOGGLE STATUS TEBUS =================
+
 async function toggleStatusTebus(item: DetailResep) {
   const idResep = item.resep_obat_id_resep
   const statusBaru: 'belum' | 'sudah' = item.status_tebus === 'sudah' ? 'belum' : 'sudah'
 
-  pesanSukses.value = ''
-  pesanError.value = ''
   loadingToggle.value = idResep
   try {
     await detailresepService.updateStatusTebus(idResep, statusBaru)
@@ -58,10 +57,19 @@ async function toggleStatusTebus(item: DetailResep) {
     daftarDetail.value = daftarDetail.value.map(d =>
       d.resep_obat_id_resep === idResep ? { ...d, status_tebus: statusBaru } : d
     )
-    pesanSukses.value = `Status tebus berhasil diubah menjadi: ${statusBaru === 'sudah' ? 'Sudah Ditebus' : 'Belum Ditebus'}`
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil',
+      text: `Status tebus berhasil diubah menjadi: ${statusBaru === 'sudah' ? 'Sudah Ditebus' : 'Belum Ditebus'}`,
+      confirmButtonColor: '#3085d6',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.reload()
+      }
+    })
   }
   catch (error: any) {
-    pesanError.value = error.message || 'Gagal update status tebus'
+    console.error('Gagal update status tebus:', error)
   }
   finally {
     loadingToggle.value = null
@@ -82,17 +90,21 @@ function cancelBatal() {
 
 async function batalkanResep() {
   if (!batalId.value) return
-  pesanSukses.value = ''
-  pesanError.value = ''
   try {
     await detailresepService.batalResep(batalId.value)
-    pesanSukses.value = 'Resep berhasil dibatalkan'
-    showConfirmDialog.value = false
-    batalId.value = undefined
-    fetchDetail()
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil',
+      text: 'Resep berhasil dibatalkan',
+      confirmButtonColor: '#3085d6',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.reload()
+      }
+    })
   }
   catch (error: any) {
-    pesanError.value = error.message || 'Gagal membatalkan resep'
+    console.error('Gagal membatalkan resep:', error)
     showConfirmDialog.value = false
   }
 }
@@ -112,19 +124,7 @@ onMounted(() => {
         </h3>
       </div>
 
-      <!-- Alert Sukses -->
-      <div v-if="pesanSukses && !showConfirmDialog" class="mb-4">
-        <p class="text-emerald-600 text-sm font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">
-          {{ pesanSukses }}
-        </p>
-      </div>
-
-      <!-- Alert Error -->
-      <div v-if="pesanError && !showConfirmDialog" class="mb-4">
-        <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
-          {{ pesanError }}
-        </p>
-      </div>
+      <!-- Alerts removed -->
 
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <!-- Search Bar -->
@@ -153,7 +153,7 @@ onMounted(() => {
                 <th class="px-5 py-4 font-semibold text-gray-600">Jumlah</th>
                 <th class="px-5 py-4 font-semibold text-gray-600">Dosis</th>
                 <th class="px-5 py-4 font-semibold text-gray-600 text-center">Status</th>
-                <th class="px-5 py-4 font-semibold text-gray-600 text-center">Aksi</th>
+                <th v-if="userRole === 'admin' || userRole === 'staff'" class="px-5 py-4 font-semibold text-gray-600 text-center">Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -202,7 +202,7 @@ onMounted(() => {
                 </td>
 
                 <!-- Kolom Aksi -->
-                <td class="px-5 py-4 align-middle">
+                <td class="px-5 py-4 align-middle" v-if="userRole === 'admin' || userRole === 'staff'">
                   <div class="flex justify-center gap-2">
                     <button
                       class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition"

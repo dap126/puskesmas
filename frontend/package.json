@@ -14,6 +14,7 @@
     "@tailwindcss/typography": "^0.5.9",
     "apexcharts": "^5.10.4",
     "axios": "^1.14.0",
+    "sweetalert2": "^11.26.25",
     "vue": "^3.3.4",
     "vue-router": "4.2.2",
     "vue3-apexcharts": "^1.11.1"

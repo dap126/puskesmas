@@ -2,12 +2,12 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { antreanService } from '../services/pasien'
+import Swal from 'sweetalert2'
 
 const router = useRouter()
 const antrean = ref<any[]>([])
 const showResetDialog = ref(false)
-const pesanSukses = ref('')
-const pesanError = ref('')
+const userRole = localStorage.getItem('user_role') || ''
 
 // State untuk mendeteksi pergantian hari
 let currentDate = new Date().toDateString()
@@ -60,43 +60,63 @@ async function fetchAntrean() {
   }
 }
 
+
 async function selesai(item: any) {
-  pesanSukses.value = ''
-  pesanError.value = ''
   try {
     await antreanService.updateStatus(item.idantrean, 'Selesai')
     item.status = 'Selesai'
-    pesanSukses.value = `Antrean ${item.no_antrean} (${item.nama_pasien}) ditandai selesai`
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil',
+      text: `Antrean ${item.no_antrean} (${item.nama_pasien}) ditandai selesai`,
+      confirmButtonColor: '#3085d6',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.reload()
+      }
+    })
   }
   catch (error: any) {
-    pesanError.value = error.message || 'Gagal mengubah status antrean'
+    console.error('Gagal mengubah status antrean:', error)
   }
 }
 
 async function undoAntrean(item: any) {
-  pesanSukses.value = ''
-  pesanError.value = ''
   try {
     await antreanService.updateStatus(item.idantrean, 'Menunggu')
     item.status = 'Menunggu'
-    pesanSukses.value = `Antrean ${item.no_antrean} (${item.nama_pasien}) dikembalikan ke Menunggu`
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil',
+      text: `Antrean ${item.no_antrean} (${item.nama_pasien}) dikembalikan ke Menunggu`,
+      confirmButtonColor: '#3085d6',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.reload()
+      }
+    })
   }
   catch (error: any) {
-    pesanError.value = error.message || 'Gagal mengubah status antrean'
+    console.error('Gagal mengubah status antrean:', error)
   }
 }
 
 async function resetAntrean() {
-  pesanSukses.value = ''
-  pesanError.value = ''
   try {
     const result = await antreanService.resetAntrean()
-    pesanSukses.value = result.message || 'Antrean berhasil direset'
-    showResetDialog.value = false
-    fetchAntrean()
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil',
+      text: result.message || 'Antrean berhasil direset',
+      confirmButtonColor: '#3085d6',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.reload()
+      }
+    })
   }
   catch (error: any) {
-    pesanError.value = error.message || 'Gagal mereset antrean'
+    console.error('Gagal mereset antrean:', error)
     showResetDialog.value = false
   }
 }
@@ -119,6 +139,7 @@ onUnmounted(() => {
           Daftar Antrean
         </h3>
         <button
+          v-if="userRole === 'admin' || userRole === 'staff'"
           :disabled="antrean.length === 0"
           class="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition transform shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           @click="showResetDialog = true"
@@ -130,19 +151,7 @@ onUnmounted(() => {
         </button>
       </div>
 
-      <!-- Alert Sukses -->
-      <div v-if="pesanSukses" class="mb-4">
-        <p class="text-emerald-600 text-sm font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">
-          {{ pesanSukses }}
-        </p>
-      </div>
-
-      <!-- Alert Error -->
-      <div v-if="pesanError" class="mb-4">
-        <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
-          {{ pesanError }}
-        </p>
-      </div>
+      <!-- Alerts removed -->
 
       <!-- Info Ringkas -->
       <div class="grid grid-cols-3 gap-4 mb-6">

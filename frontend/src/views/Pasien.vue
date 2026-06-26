@@ -1,6 +1,7 @@
 <script>
 import { antreanService, pasienService } from '../services/pasien'
 import { poliService } from '../services/dokter'
+import Swal from 'sweetalert2'
 
 export default {
   data() {
@@ -8,13 +9,12 @@ export default {
       search: '',
       showModal: false,
       showAntreanModal: false,
+      userRole: localStorage.getItem('user_role') || '',
       daftarPasien: [],
       daftarPoli: [],
       antreanHariIni: [],
       selectedPasien: null,
       antreanPoli: '',
-      pesanSukses: '',
-      pesanError: '',
       pasien: {
         nama_pasien: '',
         nik: '',
@@ -121,25 +121,27 @@ export default {
     },
 
     async tambahPasien() {
-      this.pesanSukses = ''
-      this.pesanError = ''
       try {
         await pasienService.createPasien(this.pasien)
-        this.pesanSukses = 'Pasien berhasil didaftarkan'
-        this.fetchPasien()
-        this.closeModal()
+        // 201 is handled globally by main.ts, but if 200 we can show success
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil',
+          text: 'Pasien berhasil didaftarkan',
+          confirmButtonColor: '#3085d6',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.reload()
+          }
+        })
       }
       catch (error) {
         console.error(error)
-        this.pesanError = error.message || 'Gagal mendaftarkan pasien. Silakan coba lagi.'
       }
     },
 
     // ===== Antrean Modal =====
     openAntreanModal(pasien) {
-      this.pesanSukses = ''
-      this.pesanError = ''
-
       // Cek apakah pasien sudah ada di antrean hari ini (status Menunggu)
       const today = this.formatLocalDate(new Date())
       const sudahDiAntrean = this.antreanHariIni.some((a) => {
@@ -148,7 +150,12 @@ export default {
       })
 
       if (sudahDiAntrean) {
-        this.pesanError = `${pasien.nama_pasien} sudah ada pada antrean hari ini.`
+        Swal.fire({
+          icon: 'warning',
+          title: 'Peringatan',
+          text: `${pasien.nama_pasien} sudah ada pada antrean hari ini.`,
+          confirmButtonColor: '#f8bb86',
+        })
         return
       }
 
@@ -197,14 +204,19 @@ export default {
           poli_id_poli: Number(this.antreanPoli),
         })
 
-        this.pesanSukses = `${this.selectedPasien.nama_pasien} berhasil ditambahkan ke antrean (No: ${noAntrean})`
-        this.closeAntreanModal()
-        // Refresh data antrean
-        this.fetchAntreanHariIni()
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil',
+          text: `${this.selectedPasien.nama_pasien} berhasil ditambahkan ke antrean (No: ${noAntrean})`,
+          confirmButtonColor: '#3085d6',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.reload()
+          }
+        })
       }
       catch (error) {
         console.error('Gagal menambah antrean:', error)
-        this.pesanError = 'Gagal menambahkan ke antrean. Silakan coba lagi.'
         this.closeAntreanModal()
       }
     },
@@ -240,7 +252,11 @@ export default {
         <h3 class="text-xl font-semibold text-gray-800">
           Data Pasien
         </h3>
-        <button class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition transform shadow-md" @click="openAddModal">
+        <button 
+          v-if="userRole === 'admin' || userRole === 'staff'"
+          class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition transform shadow-md" 
+          @click="openAddModal"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
@@ -248,19 +264,7 @@ export default {
         </button>
       </div>
 
-      <!-- Alert Sukses -->
-      <div v-if="pesanSukses && !showModal && !showAntreanModal" class="mb-4">
-        <p class="text-emerald-600 text-sm font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">
-          {{ pesanSukses }}
-        </p>
-      </div>
-
-      <!-- Alert Error -->
-      <div v-if="pesanError && !showModal && !showAntreanModal" class="mb-4">
-        <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
-          {{ pesanError }}
-        </p>
-      </div>
+      <!-- Alerts removed -->
 
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <!-- Search Bar -->
@@ -328,6 +332,7 @@ export default {
                 <td class="px-5 py-4 align-middle">
                   <div class="flex justify-center gap-2">
                     <button
+                      v-if="userRole === 'admin' || userRole === 'staff'"
                       class="bg-emerald-500 text-white p-1.5 rounded hover:bg-emerald-600 shadow-sm transition flex items-center gap-1.5 px-3"
                       title="Tambah ke Antrean"
                       @click="openAntreanModal(p)"
@@ -374,12 +379,7 @@ export default {
           </div>
 
           <form class="grid grid-cols-2 gap-5" @submit.prevent="tambahPasien">
-            <!-- Alert Error di dalam Modal -->
-            <div v-if="pesanError && showModal" class="col-span-2">
-              <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
-                {{ pesanError }}
-              </p>
-            </div>
+            <!-- Alert Error removed -->
 
             <div class="flex flex-col col-span-2 sm:col-span-1">
               <label class="mb-1.5 font-semibold text-gray-700 text-sm">Nama Pasien</label>
@@ -448,12 +448,7 @@ export default {
           </div>
 
           <form class="space-y-5" @submit.prevent="tambahKeAntrean">
-            <!-- Alert Error di dalam Modal Antrean -->
-            <div v-if="pesanError && showAntreanModal" class="">
-              <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
-                {{ pesanError }}
-              </p>
-            </div>
+            <!-- Alert Error removed -->
 
             <div>
               <label class="mb-1.5 font-semibold text-gray-700 text-sm block">Pilih Poli Tujuan</label>

@@ -19,7 +19,8 @@ const authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user || !req.user.role || !allowedRoles.includes(req.user.role)) {
       return res.status(403).json({ 
-        error: `Akses Ditolak! Fitur ini tidak tersedia untuk role: ${req.user?.role || 'Guest'}` 
+        error: `Akses Ditolak! Fitur ini tidak tersedia untuk role: ${req.user?.role || 'Guest'}`,
+        requiredRoles: allowedRoles
       });
     }
     next();

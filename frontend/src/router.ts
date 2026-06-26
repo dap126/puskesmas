@@ -1,5 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
+import Swal from 'sweetalert2'
 
 import Dashboard from './views/Dashboard.vue'
 import Login from './views/Login.vue'
@@ -113,7 +114,12 @@ router.beforeEach((to, from, next) => {
   // Pengecekan Hak Akses (Role)
   if (to.meta.requiresRole) {
     if (userRole !== to.meta.requiresRole) {
-      alert('Akses Ditolak! Anda tidak memiliki izin untuk membuka halaman ini.')
+      Swal.fire({
+        icon: 'error',
+        title: 'Akses Ditolak',
+        text: `Kamu tidak memiliki akses. Fitur ini hanya untuk ${String(to.meta.requiresRole)}.`,
+        confirmButtonColor: '#d33',
+      })
       if (from.path && from.path !== '/')
         return next(from.path)
       else

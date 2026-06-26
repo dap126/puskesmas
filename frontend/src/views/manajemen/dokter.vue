@@ -1,12 +1,10 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { dokterService, poliService } from '../../services/dokter'
+import Swal from 'sweetalert2'
 
 const daftarPoli = ref([])
 const listDokter = ref([])
-
-const pesanSukses = ref('')
-const pesanError = ref('')
 
 const showModal = ref(false)
 
@@ -30,7 +28,7 @@ async function fetchPoli() {
     daftarPoli.value = await poliService.getAllPoli()
   }
   catch (error) {
-    pesanError.value = error.message
+    console.error('Gagal mengambil data poli:', error.message)
   }
 }
 
@@ -54,8 +52,6 @@ function openAddModal() {
     jam_selesai: '',
     poli_id_poli: '',
   }
-  pesanSukses.value = ''
-  pesanError.value = ''
   showModal.value = true
 }
 
@@ -63,10 +59,8 @@ function closeModal() {
   showModal.value = false
 }
 
-async function handleSubmitDokter() {
-  pesanSukses.value = ''
-  pesanError.value = ''
 
+async function handleSubmitDokter() {
   try {
     let hariStr = form.value.hari_praktik_awal
     if (form.value.hari_praktik_akhir) {
@@ -82,17 +76,19 @@ async function handleSubmitDokter() {
       poli_id_poli: Number(form.value.poli_id_poli),
     })
 
-    pesanSukses.value = 'Data dokter berhasil ditambahkan'
-    fetchDokter()
-    closeModal()
-    
-    // Auto hapus pesan sukses setelah 3 detik
-    setTimeout(() => {
-      pesanSukses.value = ''
-    }, 3000)
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil',
+      text: 'Data dokter berhasil ditambahkan',
+      confirmButtonColor: '#3085d6',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.reload()
+      }
+    })
   }
   catch (error) {
-    pesanError.value = error.message
+    console.error('Gagal tambah dokter:', error.message)
   }
 }
 
@@ -109,16 +105,21 @@ function cancelDelete() {
 async function confirmDelete() {
   if (!deleteId.value)
     return
-  pesanSukses.value = ''
-  pesanError.value = ''
   try {
     await dokterService.deleteDokter(deleteId.value)
-    pesanSukses.value = 'Data dokter berhasil dihapus'
-    showConfirmDialog.value = false
-    fetchDokter()
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil',
+      text: 'Data dokter berhasil dihapus',
+      confirmButtonColor: '#3085d6',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.reload()
+      }
+    })
   }
   catch (error) {
-    pesanError.value = error.message || 'Gagal menghapus data dokter'
+    console.error('Gagal menghapus data dokter:', error.message)
     showConfirmDialog.value = false
   }
 }
@@ -162,19 +163,7 @@ function nextPage() {
         </button>
       </div>
 
-      <!-- Alert Sukses -->
-      <div v-if="pesanSukses && !showModal && !showConfirmDialog" class="mb-4">
-        <p class="text-emerald-600 text-sm font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">
-          {{ pesanSukses }}
-        </p>
-      </div>
-
-      <!-- Alert Error -->
-      <div v-if="pesanError && !showModal && !showConfirmDialog" class="mb-4">
-        <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
-          {{ pesanError }}
-        </p>
-      </div>
+      <!-- Alerts removed -->
 
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div class="overflow-x-auto">
@@ -392,11 +381,7 @@ function nextPage() {
               </select>
             </div>
 
-            <div v-if="pesanError" class="col-span-2 mt-2">
-              <p class="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-100">
-                {{ pesanError }}
-              </p>
-            </div>
+            <!-- Alerts removed -->
 
             <div class="col-span-2 flex justify-end gap-3 mt-2 pt-5 border-t border-gray-100">
               <button
