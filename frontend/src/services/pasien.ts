@@ -51,9 +51,15 @@ const API_URL_ANTREAN = '/api/antrean'
 
 // Service Antrean
 export const antreanService = {
-  // Ambil semua data antrean
+  // Ambil semua data antrean hari ini
   async getAllAntrean(): Promise<Antrean[]> {
     const response = await axios.get(API_URL_ANTREAN)
+    return response.data
+  },
+
+  // Ambil seluruh data antrean dari semua hari dan status (Khusus Admin)
+  async getSeluruhAntrean(): Promise<Antrean[]> {
+    const response = await axios.get(`${API_URL_ANTREAN}/all`)
     return response.data
   },
 
@@ -75,6 +81,12 @@ export const antreanService = {
   // Reset Antrean Hari Ini
   async resetAntrean(): Promise<any> {
     const response = await axios.delete(`${API_URL_ANTREAN}/reset`)
+    return response.data
+  },
+
+  // Reset Seluruh Antrean Tanpa Terkecuali (Khusus Admin)
+  async resetSemuaAntrean(): Promise<any> {
+    const response = await axios.delete(`${API_URL_ANTREAN}/reset-all`)
     return response.data
   },
 }
