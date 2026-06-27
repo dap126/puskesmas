@@ -6,6 +6,7 @@ import { useSidebar } from '../composables/useSidebar'
 const dropdownOpen = ref(false)
 const { isOpen } = useSidebar()
 const router = useRouter()
+const userRole = localStorage.getItem('user_role')
 
 function logout() {
   localStorage.removeItem('token')
@@ -85,6 +86,9 @@ function logout() {
             v-show="dropdownOpen"
             class="absolute right-0 z-20 w-48 py-2 mt-2 bg-white rounded-md shadow-xl"
           >
+            <div class="px-4 py-3 border-b border-gray-100">
+              <p class="text-sm text-gray-500">Halo, <span class="font-medium text-gray-900 capitalize">{{ userRole }}</span></p>
+            </div>
             <div class="p-4 border-t border-gray-100">
               <div class="relative group">
                 <button class="flex items-center w-full p-2 text-gray-500 rounded-lg hover:bg-gray-50 hover:text-red-600 transition-colors focus:outline-none" @click="logout">

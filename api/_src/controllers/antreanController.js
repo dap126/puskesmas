@@ -16,6 +16,21 @@ exports.getAllAntrean = (req, res) => {
   });
 };
 
+// GET /all
+exports.getSeluruhAntrean = (req, res) => {
+  const sql = `
+    SELECT a.*, p.nama_pasien, po.nama_poli 
+    FROM antrean a
+    JOIN pasien p ON a.pasien_idpasien = p.idpasien
+    JOIN poli po ON a.poli_id_poli = po.id_poli
+    ORDER BY a.tgl_antrean DESC, a.no_antrean ASC
+  `;
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+};
+
 // POST /
 exports.createAntrean = (req, res) => {
   const { tgl_antrean, no_antrean, status, pasien_idpasien, poli_id_poli } = req.body;
@@ -40,5 +55,13 @@ exports.resetAntrean = (req, res) => {
   db.query('DELETE FROM antrean WHERE DATE(tgl_antrean) = CURDATE()', (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: `Berhasil mereset ${result.affectedRows} antrean hari ini` });
+  });
+};
+
+// DELETE /reset-all
+exports.resetSemuaAntrean = (req, res) => {
+  db.query('DELETE FROM antrean', (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ message: `Berhasil mereset seluruh ${result.affectedRows} data antrean` });
   });
 };
