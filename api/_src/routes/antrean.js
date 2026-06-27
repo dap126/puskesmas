@@ -1,5 +1,3 @@
-api/_src/routes/antrean.js
-
 const express = require('express');
 const router = express.Router();
 const { verifyToken, authorizeRoles } = require('../middleware/authMiddleware');
