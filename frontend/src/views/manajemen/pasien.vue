@@ -1,11 +1,15 @@
 <script>
 import { computed, onMounted, ref } from 'vue'
-import { pasienService } from '../../services/pasien'
+import { pasienService, antreanService } from '../../services/pasien'
+import { medisService } from '../../services/medis'
 import Swal from 'sweetalert2'
 
 export default {
   setup() {
+    const activeTab = ref('pasien')
     const pasienList = ref([])
+    const antreanList = ref([])
+    const medisList = ref([])
     const showModal = ref(false)
     const currentPasienId = ref(null)
 
@@ -15,21 +19,28 @@ export default {
       alamat: '',
     })
 
-    // Delete Dialog State
-    const showConfirmDialog = ref(false)
-    const deleteId = ref(null)
-
-    const fetchPasien = async () => {
+    const fetchAllData = async () => {
       try {
-        const data = await pasienService.getAllPasien()
-        pasienList.value = data.map(p => ({
+        const [pData, aData, mData] = await Promise.all([
+          pasienService.getAllPasien(),
+          antreanService.getSeluruhAntrean(),
+          medisService.getAllMedis()
+        ])
+        pasienList.value = pData.map(p => ({
           ...p,
-          no_telpon: p.no_telpon || '-',
+          no_telepon: p.no_telepon || '-',
         }))
+        antreanList.value = aData
+        medisList.value = mData
       }
       catch (error) {
         console.error(error.message)
       }
+    }
+
+    const getPasienName = (id) => {
+      const p = pasienList.value.find(p => p.idpasien === Number(id))
+      return p ? p.nama_pasien : 'Unknown'
     }
 
     const editPasien = (pasien) => {
@@ -46,7 +57,6 @@ export default {
       showModal.value = false
     }
 
-
     const submitForm = async () => {
       try {
         await pasienService.updatePasien(currentPasienId.value, form.value)
@@ -57,7 +67,8 @@ export default {
           confirmButtonColor: '#3085d6',
         }).then((result) => {
           if (result.isConfirmed) {
-            window.location.reload()
+            closeForm()
+            fetchAllData()
           }
         })
       }
@@ -66,80 +77,99 @@ export default {
       }
     }
 
-    const openConfirmDialog = (id) => {
-      deleteId.value = id
-      showConfirmDialog.value = true
-    }
-
-    const cancelDelete = () => {
-      showConfirmDialog.value = false
-      deleteId.value = null
-    }
-
-    const confirmDelete = async () => {
-      if (!deleteId.value)
-        return
-
-      try {
-        await pasienService.deletePasien(deleteId.value)
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil',
-          text: 'Data pasien berhasil dihapus',
-          confirmButtonColor: '#3085d6',
-        }).then((result) => {
-          if (result.isConfirmed) {
-            window.location.reload()
+    const confirmDelete = (type, id) => {
+      Swal.fire({
+        title: 'Konfirmasi Penghapusan',
+        text: `Apakah Anda yakin ingin menghapus data ${type} ini permanen?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            if (type === 'pasien') {
+              await pasienService.deletePasien(id)
+            } else if (type === 'antrean') {
+              await antreanService.deleteAntrean(id)
+            } else if (type === 'riwayat') {
+              await medisService.deleteMedis(id)
+            }
+            
+            Swal.fire('Terhapus!', `Data ${type} berhasil dihapus.`, 'success')
+            fetchAllData()
+          } catch (error) {
+            const errorMessage = error.response?.data?.error || `Gagal menghapus data ${type}.`
+            Swal.fire('Gagal!', errorMessage, 'error')
           }
-        })
-      }
-      catch (error) {
-        console.error('Gagal menghapus pasien:', error.message)
-        showConfirmDialog.value = false
-      }
+        }
+      })
+    }
+
+    const confirmResetSemuaAntrean = () => {
+      Swal.fire({
+        title: 'Konfirmasi Reset',
+        text: 'Apakah Anda yakin ingin menghapus SELURUH daftar antrean tanpa terkecuali? Tindakan ini tidak dapat dibatalkan.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Reset Semua!',
+        cancelButtonText: 'Batal'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const res = await antreanService.resetSemuaAntrean()
+            Swal.fire('Berhasil!', res.message || 'Seluruh antrean berhasil direset.', 'success')
+            fetchAllData()
+          } catch (error) {
+            const errorMessage = error.response?.data?.error || 'Gagal mereset semua antrean.'
+            Swal.fire('Gagal!', errorMessage, 'error')
+          }
+        }
+      })
     }
 
     onMounted(() => {
-      fetchPasien()
+      fetchAllData()
     })
 
     const currentPage = ref(1)
     const itemsPerPage = 10
 
-    const totalPages = computed(() => Math.ceil(pasienList.value.length / itemsPerPage))
-    const paginatedData = computed(() => {
-      const start = (currentPage.value - 1) * itemsPerPage
-      return pasienList.value.slice(start, start + itemsPerPage)
+    const activeList = computed(() => {
+      if (activeTab.value === 'pasien') return pasienList.value
+      if (activeTab.value === 'antrean') return antreanList.value
+      if (activeTab.value === 'riwayat') return medisList.value
+      return []
     })
 
-    const prevPage = () => {
-      if (currentPage.value > 1)
-        currentPage.value--
-    }
-    const nextPage = () => {
-      if (currentPage.value < totalPages.value)
-        currentPage.value++
-    }
+    const totalPages = computed(() => Math.ceil(activeList.value.length / itemsPerPage))
+    const paginatedData = computed(() => {
+      const start = (currentPage.value - 1) * itemsPerPage
+      return activeList.value.slice(start, start + itemsPerPage)
+    })
 
     return {
+      activeTab,
       pasienList,
+      antreanList,
+      medisList,
       showModal,
       form,
-      showConfirmDialog,
-      deleteId,
       editPasien,
       closeForm,
       submitForm,
-      openConfirmDialog,
-      cancelDelete,
       confirmDelete,
-      fetchPasien,
+      confirmResetSemuaAntrean,
+      getPasienName,
       currentPage,
       itemsPerPage,
       totalPages,
       paginatedData,
-      prevPage,
-      nextPage,
+      activeList
     }
   },
 }
@@ -152,11 +182,49 @@ export default {
         <h3 class="text-xl font-semibold text-gray-800">Manajemen Pasien</h3>
       </div>
 
-      <!-- Alerts removed -->
+      <!-- Navbar Tabs -->
+      <div class="flex justify-between items-center border-b border-gray-200 mb-6">
+        <div class="flex space-x-4">
+          <button
+            :class="activeTab === 'pasien' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            class="whitespace-nowrap py-3 border-b-2 font-medium text-sm transition-colors"
+            @click="activeTab = 'pasien'; currentPage = 1"
+          >
+            Data Pasien
+          </button>
+          <button
+            :class="activeTab === 'antrean' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            class="whitespace-nowrap py-3 border-b-2 font-medium text-sm transition-colors"
+            @click="activeTab = 'antrean'; currentPage = 1"
+          >
+            Antrean
+          </button>
+          <button
+            :class="activeTab === 'riwayat' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            class="whitespace-nowrap py-3 border-b-2 font-medium text-sm transition-colors"
+            @click="activeTab = 'riwayat'; currentPage = 1"
+          >
+            Riwayat Medis Pasien
+          </button>
+        </div>
+        
+        <button
+          v-if="activeTab === 'antrean'"
+          class="flex items-center gap-2 px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700 transition shadow-sm text-sm disabled:opacity-50"
+          :disabled="antreanList.length === 0"
+          @click="confirmResetSemuaAntrean"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182M2.985 19.644l3.181-3.182" />
+          </svg>
+          Hapus Semua Antrean
+        </button>
+      </div>
 
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
+          <!-- TAB PASIEN -->
+          <table v-if="activeTab === 'pasien'" class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-gray-50 border-b border-gray-100">
                 <th class="px-5 py-4 font-semibold text-gray-600">No</th>
@@ -179,7 +247,7 @@ export default {
                         <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.862 4.487Zm0 0L19.5 7.15M6.832 19.82l-1.897-1.13" />
                       </svg>
                     </button>
-                    <button @click="openConfirmDialog(pasien.idpasien)" class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition" title="Hapus Pasien">
+                    <button @click="confirmDelete('pasien', pasien.idpasien)" class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition" title="Hapus Pasien">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                       </svg>
@@ -187,9 +255,92 @@ export default {
                   </div>
                 </td>
               </tr>
-              <tr v-if="pasienList.length === 0">
+              <tr v-if="paginatedData.length === 0">
                 <td colspan="5" class="py-12 text-center text-gray-400">
                   Belum ada data pasien terdaftar.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- TAB ANTREAN -->
+          <table v-if="activeTab === 'antrean'" class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-100">
+                <th class="px-5 py-4 font-semibold text-gray-600">No Antrean</th>
+                <th class="px-5 py-4 font-semibold text-gray-600">Nama Pasien</th>
+                <th class="px-5 py-4 font-semibold text-gray-600">Tanggal</th>
+                <th class="px-5 py-4 font-semibold text-gray-600">Status</th>
+                <th class="px-5 py-4 font-semibold text-gray-600 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(antrean) in paginatedData" :key="antrean.idantrean" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
+                <td class="px-5 py-4 text-gray-800 font-medium">{{ antrean.no_antrean }}</td>
+                <td class="px-5 py-4 text-gray-800">{{ getPasienName(antrean.pasien_idpasien) }}</td>
+                <td class="px-5 py-4 text-gray-600 text-sm">{{ antrean.tgl_antrean ? new Date(antrean.tgl_antrean).toLocaleDateString('id-ID') : '-' }}</td>
+                <td class="px-5 py-4 text-gray-600 text-sm">
+                  <span v-if="antrean.status === 'Menunggu' || antrean.status === 'menunggu'" class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Menunggu</span>
+                  <span v-else-if="antrean.status === 'Selesai' || antrean.status === 'selesai'" class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Selesai</span>
+                  <span v-else class="text-gray-400">{{ antrean.status || '-' }}</span>
+                </td>
+                <td class="px-5 py-4 align-middle">
+                  <div class="flex justify-center gap-2">
+                    <button @click="confirmDelete('antrean', antrean.idantrean)" class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition" title="Hapus Permanen">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="paginatedData.length === 0">
+                <td colspan="4" class="py-12 text-center text-gray-400">
+                  Belum ada data antrean terdaftar.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- TAB RIWAYAT MEDIS -->
+          <table v-if="activeTab === 'riwayat'" class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-100">
+                <th class="px-5 py-4 font-semibold text-gray-600">No RM</th>
+                <th class="px-5 py-4 font-semibold text-gray-600">Nama Pasien</th>
+                <th class="px-5 py-4 font-semibold text-gray-600">Keluhan</th>
+                <th class="px-5 py-4 font-semibold text-gray-600">Diagnosa</th>
+                <th class="px-5 py-4 font-semibold text-gray-600">Tanggal</th>
+                <th class="px-5 py-4 font-semibold text-gray-600">Status Resep</th>
+                <th class="px-5 py-4 font-semibold text-gray-600 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(rm) in paginatedData" :key="rm.id_rm" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
+                <td class="px-5 py-4 text-gray-800 font-medium">RM-{{ String(rm.id_rm).padStart(4, '0') }}</td>
+                <td class="px-5 py-4 text-gray-800">{{ getPasienName(rm.pasien_idpasien) }}</td>
+                <td class="px-5 py-4 text-gray-600 text-sm">{{ rm.keluhan || '-' }}</td>
+                <td class="px-5 py-4 text-gray-600 text-sm">{{ rm.diagnosa || '-' }}</td>
+                <td class="px-5 py-4 text-gray-600 text-sm">{{ rm.tgl_periksa ? new Date(rm.tgl_periksa).toLocaleDateString('id-ID') : '-' }}</td>
+                <td class="px-5 py-4 text-gray-600 text-sm">
+                  <span v-if="rm.status_tebus === 'belum'" class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Belum</span>
+                  <span v-else-if="rm.status_tebus === 'sudah' || rm.status_tebus === 'selesai'" class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Selesai</span>
+                  <span v-else-if="rm.status_tebus === 'batal'" class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Batal</span>
+                  <span v-else class="text-gray-400">-</span>
+                </td>
+                <td class="px-5 py-4 align-middle">
+                  <div class="flex justify-center gap-2">
+                    <button @click="confirmDelete('riwayat', rm.id_rm)" class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition" title="Hapus Permanen">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="paginatedData.length === 0">
+                <td colspan="6" class="py-12 text-center text-gray-400">
+                  Belum ada data riwayat medis terdaftar.
                 </td>
               </tr>
             </tbody>
@@ -200,25 +351,9 @@ export default {
         <div v-if="totalPages > 1" class="flex justify-between items-center mt-6">
           <p class="text-sm text-gray-600">
             Menampilkan {{ (currentPage - 1) * itemsPerPage + 1 }} - 
-            {{ Math.min(currentPage * itemsPerPage, pasienList.length) }} dari {{ pasienList.length }} data
+            {{ Math.min(currentPage * itemsPerPage, activeList.length) }} dari {{ activeList.length }} data
           </p>
-          <UPagination v-model:page="currentPage" active-color="primary" :total="pasienList.length" />
-        </div>
-      </div>
-
-      <!-- Confirmation Dialog -->
-      <div v-if="showConfirmDialog" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm">
-          <h2 class="text-lg font-bold text-gray-800 mb-4">Konfirmasi Penghapusan</h2>
-          <p class="text-gray-600 mb-6">Apakah Anda yakin ingin menghapus data pasien ini?</p>
-          <div class="flex justify-end gap-3">
-            <button class="bg-white text-gray-600 px-6 py-2.5 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition" @click="cancelDelete">
-              Batal
-            </button>
-            <button class="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-lg font-semibold transition" @click="confirmDelete">
-              Hapus
-            </button>
-          </div>
+          <UPagination v-model:page="currentPage" active-color="primary" :total="activeList.length" />
         </div>
       </div>
 
@@ -266,8 +401,6 @@ export default {
                 class="px-4 py-2.5 rounded-lg border border-gray-300 transition w-full focus:border-indigo-600 focus:ring focus:ring-indigo-200 outline-none"
               />
             </div>
-
-            <!-- Alerts removed -->
 
             <div class="col-span-2 flex justify-end gap-3 mt-2 pt-5 border-t border-gray-100">
               <button 
