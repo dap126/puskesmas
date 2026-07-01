@@ -4,6 +4,8 @@ import VueApexCharts from 'vue3-apexcharts'
 import type { ApexOptions } from 'apexcharts'
 import { getDashboardStats } from '../services/dashboard'
 
+const isLoading = ref(true)
+
 const genderOptions = ref<ApexOptions>({
   chart: {
     type: 'pie',
@@ -76,6 +78,7 @@ const ageSeries = ref([{
 }])
 
 onMounted(async () => {
+  isLoading.value = true
   try {
     const data = await getDashboardStats()
 
@@ -112,6 +115,9 @@ onMounted(async () => {
   }
   catch (err) {
     console.error(err)
+  }
+  finally {
+    isLoading.value = false
   }
 })
 </script>
@@ -166,7 +172,8 @@ onMounted(async () => {
               </div>
 
               <div class="mx-5">
-                <h4 class="text-2xl font-semibold text-gray-800">
+                <div v-if="isLoading" class="h-8 w-16 bg-gray-200 animate-pulse rounded mb-1"></div>
+                <h4 v-else class="text-2xl font-semibold text-gray-800">
                   {{ totalPasien }}
                 </h4>
                 <div class="text-gray-500 font-medium text-sm mt-1">
@@ -203,7 +210,8 @@ onMounted(async () => {
               </div>
 
               <div class="mx-5">
-                <h4 class="text-2xl font-semibold text-gray-800">
+                <div v-if="isLoading" class="h-8 w-16 bg-gray-200 animate-pulse rounded mb-1"></div>
+                <h4 v-else class="text-2xl font-semibold text-gray-800">
                   {{ totalStaff }}
                 </h4>
                 <div class="text-gray-500 font-medium text-sm mt-1">
@@ -240,7 +248,8 @@ onMounted(async () => {
               </div>
 
               <div class="mx-5">
-                <h4 class="text-2xl font-semibold text-gray-800">
+                <div v-if="isLoading" class="h-8 w-16 bg-gray-200 animate-pulse rounded mb-1"></div>
+                <h4 v-else class="text-2xl font-semibold text-gray-800">
                   {{ totalAntrean }}
                 </h4>
                 <div class="text-gray-500 font-medium text-sm mt-1">
@@ -260,7 +269,8 @@ onMounted(async () => {
                 Distribusi Gender Pasien
               </h4>
               <div class="h-64 relative">
-                <VueApexCharts type="pie" height="100%" :options="genderOptions" :series="genderSeries" />
+                <div v-if="isLoading" class="w-full h-full bg-gray-200 animate-pulse rounded-full mx-auto" style="max-width: 200px; max-height: 200px;"></div>
+                <VueApexCharts v-else type="pie" height="100%" :options="genderOptions" :series="genderSeries" />
               </div>
             </div>
           </div>
@@ -272,7 +282,8 @@ onMounted(async () => {
                 Distribusi Umur Pasien
               </h4>
               <div class="h-64 relative">
-                <VueApexCharts type="bar" height="100%" :options="ageOptions" :series="ageSeries" />
+                <div v-if="isLoading" class="w-full h-full bg-gray-200 animate-pulse rounded-lg"></div>
+                <VueApexCharts v-else type="bar" height="100%" :options="ageOptions" :series="ageSeries" />
               </div>
             </div>
           </div>

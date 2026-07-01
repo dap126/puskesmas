@@ -6,6 +6,7 @@ import Swal from 'sweetalert2'
 // STATE
 const daftarDetail = ref<DetailResep[]>([])
 const search = ref('')
+const isLoading = ref(true)
 const showConfirmDialog = ref(false)
 const batalId = ref<number | undefined>(undefined) // id_resep (resep_obat_id_resep)
 const loadingToggle = ref<number | null>(null)      // id_resep yang sedang di-toggle
@@ -13,12 +14,16 @@ const userRole = localStorage.getItem('user_role') || ''
 
 // ================= GET DATA =================
 async function fetchDetail() {
+  isLoading.value = true
   try {
     const data = await detailresepService.getAllDetailResep()
     daftarDetail.value = data
   }
   catch (error: any) {
     console.error(error.message)
+  }
+  finally {
+    isLoading.value = false
   }
 }
 
@@ -157,71 +162,77 @@ onMounted(() => {
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="(item, index) in paginatedData"
-                :key="item.id_detail"
-                class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0"
-              >
-                <td class="px-5 py-4 text-gray-600">
-                  {{ (currentPage - 1) * itemsPerPage + index + 1 }}
+              <tr v-if="isLoading">
+                <td colspan="8" class="py-12 text-center text-gray-400">
+                  Memuat data...
                 </td>
-                <td class="px-5 py-4 text-gray-800 font-semibold tracking-wide">
-                  {{ item.no_resep || '-' }}
+              </tr>
+              <tr v-else-if="filteredResep.length === 0">
+                <td colspan="8" class="py-12 text-center text-gray-400">
+                  {{ search ? 'Tidak ada resep yang cocok dengan pencarian.' : 'Tidak ada data' }}
                 </td>
-                <td class="px-5 py-4 text-gray-800 font-medium">
-                  {{ item.nama_pasien }}
-                </td>
-                <td class="px-5 py-4 text-gray-800 font-medium">
-                  {{ item.nama_obat }}
-                </td>
-                <td class="px-5 py-4 text-gray-600">
-                  <span class="px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full tracking-wide">
-                    {{ item.jumlah_obat }}
-                  </span>
-                </td>
-                <td class="px-5 py-4 text-gray-600">
-                  {{ item.dosis }}
-                </td>
-
-                <!-- Kolom Status Tebus -->
-                <td class="px-5 py-4 text-center">
-                  <button
-                    :disabled="loadingToggle === item.resep_obat_id_resep"
-                    :title="item.status_tebus === 'sudah' ? 'Klik untuk tandai Belum Ditebus' : 'Klik untuk tandai Sudah Ditebus'"
-                    :class="[
-                      'px-3 py-1 text-xs font-semibold rounded-full transition cursor-pointer select-none',
-                      item.status_tebus === 'sudah'
-                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                        : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200',
-                      loadingToggle === item.resep_obat_id_resep ? 'opacity-60 cursor-wait' : '',
-                    ]"
-                    @click="toggleStatusTebus(item)"
-                  >
-                    {{ item.status_tebus === 'sudah' ? 'Sudah' : 'Belum' }}
-                  </button>
-                </td>
-
-                <!-- Kolom Aksi -->
-                <td class="px-5 py-4 align-middle" v-if="userRole === 'admin' || userRole === 'staff'">
-                  <div class="flex justify-center gap-2">
+              </tr>
+              <template v-else>
+                <tr
+                  v-for="(item, index) in paginatedData"
+                  :key="item.id_detail"
+                  class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0"
+                >
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ (currentPage - 1) * itemsPerPage + index + 1 }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-800 font-semibold tracking-wide">
+                    {{ item.no_resep || '-' }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-800 font-medium">
+                    {{ item.nama_pasien }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-800 font-medium">
+                    {{ item.nama_obat }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-600">
+                    <span class="px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full tracking-wide">
+                      {{ item.jumlah_obat }}
+                    </span>
+                  </td>
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ item.dosis }}
+                  </td>
+  
+                  <!-- Kolom Status Tebus -->
+                  <td class="px-5 py-4 text-center">
                     <button
-                      class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition"
-                      title="Batalkan Resep"
-                      @click="openConfirmBatal(item.resep_obat_id_resep)"
+                      :disabled="loadingToggle === item.resep_obat_id_resep"
+                      :title="item.status_tebus === 'sudah' ? 'Klik untuk tandai Belum Ditebus' : 'Klik untuk tandai Sudah Ditebus'"
+                      :class="[
+                        'px-3 py-1 text-xs font-semibold rounded-full transition cursor-pointer select-none',
+                        item.status_tebus === 'sudah'
+                          ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                          : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200',
+                        loadingToggle === item.resep_obat_id_resep ? 'opacity-60 cursor-wait' : '',
+                      ]"
+                      @click="toggleStatusTebus(item)"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                      </svg>
+                      {{ item.status_tebus === 'sudah' ? 'Sudah' : 'Belum' }}
                     </button>
-                  </div>
-                </td>
-              </tr>
-
-              <tr v-if="filteredResep.length === 0">
-                <td colspan="7" class="py-12 text-center text-gray-400">
-                  Belum ada data resep terdaftar.
-                </td>
-              </tr>
+                  </td>
+  
+                  <!-- Kolom Aksi -->
+                  <td class="px-5 py-4 align-middle" v-if="userRole === 'admin' || userRole === 'staff'">
+                    <div class="flex justify-center gap-2">
+                      <button
+                        class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition"
+                        title="Batalkan Resep"
+                        @click="openConfirmBatal(item.resep_obat_id_resep)"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
         </div>

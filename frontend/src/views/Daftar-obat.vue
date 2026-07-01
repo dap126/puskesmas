@@ -8,6 +8,7 @@ const userRole = localStorage.getItem('user_role') || ''
 const showModal = ref(false)
 const editMode = ref(false)
 const daftarObat = ref<Obat[]>([])
+const isLoading = ref(true)
 const showConfirmDialog = ref(false)
 const deleteId = ref<number | undefined>(undefined)
 
@@ -44,12 +45,16 @@ function nextPage() {
 }
 
 async function fetchObat() {
+  isLoading.value = true
   try {
     const data = await obatService.getAllObat()
     daftarObat.value = data
   }
   catch (error) {
     console.error('Gagal mengambil data obat', error)
+  }
+  finally {
+    isLoading.value = false
   }
 }
 
@@ -215,44 +220,51 @@ onMounted(() => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(obat, index) in paginatedData" :key="obat.id_obat" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
-                <td class="px-5 py-4 text-gray-600">
-                  {{ (currentPage - 1) * itemsPerPage + index + 1 }}
-                </td>
-                <td class="px-5 py-4 text-gray-800 font-medium">
-                  {{ obat.nama_obat }}
-                </td>
-                <td class="px-5 py-4 text-gray-600">
-                  {{ obat.kategori }}
-                </td>
-                <td class="px-5 py-4 text-gray-600">
-                  <span :class="obat.stok < 20 ? 'px-3 py-1 text-xs font-semibold bg-red-100 text-red-700 rounded-full tracking-wide' : 'px-3 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700 rounded-full tracking-wide'">
-                    {{ obat.stok }}
-                  </span>
-                </td>
-                <td class="px-5 py-4 text-gray-600">
-                  {{ obat.satuan }}
-                </td>
-                <td class="px-5 py-4 align-middle" v-if="userRole === 'admin' || userRole === 'staff'">
-                  <div class="flex justify-center gap-2">
-                    <button class="bg-blue-500 text-white p-1.5 rounded hover:bg-blue-600 shadow-sm transition" title="Edit Obat" @click="editObat(obat)">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                      </svg>
-                    </button>
-                    <button class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition" title="Hapus Obat" @click="openConfirmHapus(obat.id_obat)">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                      </svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr v-if="filteredObat.length === 0">
+              <tr v-if="isLoading">
                 <td colspan="6" class="py-12 text-center text-gray-400">
-                  {{ search ? 'Tidak ada obat yang cocok dengan pencarian.' : 'Belum ada data obat terdaftar.' }}
+                  Memuat data...
                 </td>
               </tr>
+              <tr v-else-if="filteredObat.length === 0">
+                <td colspan="6" class="py-12 text-center text-gray-400">
+                  {{ search ? 'Tidak ada obat yang cocok dengan pencarian.' : 'Tidak ada data' }}
+                </td>
+              </tr>
+              <template v-else>
+                <tr v-for="(obat, index) in paginatedData" :key="obat.id_obat" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ (currentPage - 1) * itemsPerPage + index + 1 }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-800 font-medium">
+                    {{ obat.nama_obat }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ obat.kategori }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-600">
+                    <span :class="obat.stok < 20 ? 'px-3 py-1 text-xs font-semibold bg-red-100 text-red-700 rounded-full tracking-wide' : 'px-3 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700 rounded-full tracking-wide'">
+                      {{ obat.stok }}
+                    </span>
+                  </td>
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ obat.satuan }}
+                  </td>
+                  <td class="px-5 py-4 align-middle" v-if="userRole === 'admin' || userRole === 'staff'">
+                    <div class="flex justify-center gap-2">
+                      <button class="bg-blue-500 text-white p-1.5 rounded hover:bg-blue-600 shadow-sm transition" title="Edit Obat" @click="editObat(obat)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                        </svg>
+                      </button>
+                      <button class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition" title="Hapus Obat" @click="openConfirmHapus(obat.id_obat)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
         </div>

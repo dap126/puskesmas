@@ -25,6 +25,7 @@ export default {
       },
       currentPage: 1,
       itemsPerPage: 10,
+      isLoading: true,
     }
   },
 
@@ -73,12 +74,16 @@ export default {
     },
 
     async fetchPasien() {
+      this.isLoading = true
       try {
         const data = await pasienService.getAllPasien()
         this.daftarPasien = data
       }
       catch (error) {
         console.error(error)
+      }
+      finally {
+        this.isLoading = false
       }
     },
 
@@ -310,46 +315,53 @@ export default {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(p, index) in paginatedPasien" :key="p.idpasien" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
-                <td class="px-5 py-4 text-gray-800 font-medium">
-                  {{ p.nama_pasien }}
-                </td>
-                <td class="px-5 py-4 text-gray-600">
-                  {{ p.nik }}
-                </td>
-                <td class="px-5 py-4 text-gray-600">
-                  {{ p.tgl_lahir ? new Date(p.tgl_lahir).toLocaleDateString('id-ID') : '-' }}
-                </td>
-                <td class="px-5 py-4 text-gray-600 font-medium">
-                  {{ calculateAge(p.tgl_lahir) }} Tahun
-                </td>
-                <td class="px-5 py-4 text-gray-600">
-                  {{ p.jenis_kelamin }}
-                </td>
-                <td class="px-5 py-4 text-gray-600">
-                  {{ p.no_telepon }}
-                </td>
-                <td class="px-5 py-4 align-middle">
-                  <div class="flex justify-center gap-2">
-                    <button
-                      v-if="userRole === 'admin' || userRole === 'staff'"
-                      class="bg-emerald-500 text-white p-1.5 rounded hover:bg-emerald-600 shadow-sm transition flex items-center gap-1.5 px-3"
-                      title="Tambah ke Antrean"
-                      @click="openAntreanModal(p)"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                      </svg>
-                      <span class="text-sm font-medium">Antrean</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr v-if="filteredPasien.length === 0">
+              <tr v-if="isLoading">
                 <td colspan="7" class="py-12 text-center text-gray-400">
-                  {{ search ? 'Tidak ada pasien yang cocok dengan pencarian.' : 'Belum ada data pasien terdaftar.' }}
+                  Memuat data...
                 </td>
               </tr>
+              <tr v-else-if="filteredPasien.length === 0">
+                <td colspan="7" class="py-12 text-center text-gray-400">
+                  {{ search ? 'Tidak ada pasien yang cocok dengan pencarian.' : 'Tidak ada data' }}
+                </td>
+              </tr>
+              <template v-else>
+                <tr v-for="(p, index) in paginatedPasien" :key="p.idpasien" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
+                  <td class="px-5 py-4 text-gray-800 font-medium">
+                    {{ p.nama_pasien }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ p.nik }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ p.tgl_lahir ? new Date(p.tgl_lahir).toLocaleDateString('id-ID') : '-' }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-600 font-medium">
+                    {{ calculateAge(p.tgl_lahir) }} Tahun
+                  </td>
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ p.jenis_kelamin }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ p.no_telepon }}
+                  </td>
+                  <td class="px-5 py-4 align-middle">
+                    <div class="flex justify-center gap-2">
+                      <button
+                        v-if="userRole === 'admin' || userRole === 'staff'"
+                        class="bg-emerald-500 text-white p-1.5 rounded hover:bg-emerald-600 shadow-sm transition flex items-center gap-1.5 px-3"
+                        title="Tambah ke Antrean"
+                        @click="openAntreanModal(p)"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        <span class="text-sm font-medium">Antrean</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
         </div>

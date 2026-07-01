@@ -6,6 +6,7 @@ import Swal from 'sweetalert2'
 
 const router = useRouter()
 const antrean = ref<any[]>([])
+const isLoading = ref(true)
 const showResetDialog = ref(false)
 const userRole = localStorage.getItem('user_role') || ''
 
@@ -19,8 +20,8 @@ function initDayChecker() {
     const today = new Date().toDateString()
     if (today !== currentDate) {
       currentDate = today
-      antrean.value = [] // Langsung kosongkan tampilan di frontend
-      fetchAntrean() // Re-fetch (harusnya kosong karena backend sudah terfilter CURDATE)
+      antrean.value = [] 
+      fetchAntrean() 
     }
   }, 60000)
 }
@@ -52,11 +53,15 @@ function nextPage() {
 }
 
 async function fetchAntrean() {
+  isLoading.value = true
   try {
     antrean.value = await antreanService.getAllAntrean()
   }
   catch (error) {
     console.error('Gagal mengambil data antrean:', error)
+  }
+  finally {
+    isLoading.value = false
   }
 }
 
@@ -207,55 +212,62 @@ onUnmounted(() => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(item, index) in paginatedData" :key="item.idantrian" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
-                <td class="px-5 py-4 text-gray-600">
-                  {{ (currentPage - 1) * itemsPerPage + index + 1 }}
-                </td>
-                <td class="px-5 py-4 text-gray-800 font-semibold">
-                  {{ item.no_antrean }}
-                </td>
-                <td class="px-5 py-4 text-gray-800 font-medium">
-                  {{ item.nama_pasien }}
-                </td>
-                <td class="px-5 py-4 text-gray-600">
-                  {{ item.nama_poli }}
-                </td>
-                <td class="px-5 py-4">
-                  <span
-                    :class="{
-                      'text-yellow-600 font-semibold bg-yellow-100 px-3 py-1 rounded-full text-xs uppercase tracking-wide': item.status === 'Menunggu' || item.status === 'menunggu',
-                      'text-emerald-600 font-semibold bg-emerald-100 px-3 py-1 rounded-full text-xs uppercase tracking-wide': item.status === 'Selesai' || item.status === 'selesai',
-                    }"
-                  >
-                    {{ item.status }}
-                  </span>
-                </td>
-                <td class="px-5 py-4 align-middle">
-                  <div class="flex justify-center gap-2">
-                    <button
-                      v-if="item.status !== 'Selesai' && item.status !== 'selesai'" class="bg-emerald-500 text-white p-1.5 rounded hover:bg-emerald-600 shadow-sm transition"
-                      title="Tandai Selesai" @click="selesai(item)"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                      </svg>
-                    </button>
-                    <button
-                      v-if="item.status === 'Selesai' || item.status === 'selesai'" class="bg-yellow-500 text-white p-1.5 rounded hover:bg-yellow-600 shadow-sm transition"
-                      title="Undo ke Menunggu" @click="undoAntrean(item)"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
-                      </svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr v-if="antrean.length === 0">
+              <tr v-if="isLoading">
                 <td colspan="6" class="py-12 text-center text-gray-400">
-                  Tidak ada antrean hari ini.
+                  Memuat data...
                 </td>
               </tr>
+              <tr v-else-if="antrean.length === 0">
+                <td colspan="6" class="py-12 text-center text-gray-400">
+                  Tidak ada data
+                </td>
+              </tr>
+              <template v-else>
+                <tr v-for="(item, index) in paginatedData" :key="item.idantrian" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ (currentPage - 1) * itemsPerPage + index + 1 }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-800 font-semibold">
+                    {{ item.no_antrean }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-800 font-medium">
+                    {{ item.nama_pasien }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ item.nama_poli }}
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      :class="{
+                        'text-yellow-600 font-semibold bg-yellow-100 px-3 py-1 rounded-full text-xs uppercase tracking-wide': item.status === 'Menunggu' || item.status === 'menunggu',
+                        'text-emerald-600 font-semibold bg-emerald-100 px-3 py-1 rounded-full text-xs uppercase tracking-wide': item.status === 'Selesai' || item.status === 'selesai',
+                      }"
+                    >
+                      {{ item.status }}
+                    </span>
+                  </td>
+                  <td class="px-5 py-4 align-middle">
+                    <div class="flex justify-center gap-2">
+                      <button
+                        v-if="item.status !== 'Selesai' && item.status !== 'selesai'" class="bg-emerald-500 text-white p-1.5 rounded hover:bg-emerald-600 shadow-sm transition"
+                        title="Tandai Selesai" @click="selesai(item)"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                        </svg>
+                      </button>
+                      <button
+                        v-if="item.status === 'Selesai' || item.status === 'selesai'" class="bg-yellow-500 text-white p-1.5 rounded hover:bg-yellow-600 shadow-sm transition"
+                        title="Undo ke Menunggu" @click="undoAntrean(item)"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
         </div>

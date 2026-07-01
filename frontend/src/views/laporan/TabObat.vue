@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
 const dataObat = ref([]);
+const loading = ref(true);
 
 onMounted(async () => {
   try {
@@ -25,6 +26,8 @@ onMounted(async () => {
     });
   } catch (error) {
     console.error('Error fetching data obat:', error);
+  } finally {
+    loading.value = false;
   }
 });
 </script>
@@ -50,36 +53,43 @@ onMounted(async () => {
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-            <tr 
-              v-for="(item, index) in dataObat" 
-              :key="index"
-              class="hover:bg-gray-100 transition-colors"
-            >
-              <td class="py-2 pr-2">
-                <div class="font-medium text-gray-800">{{ item.nama }}</div>
-                <div class="text-xs text-gray-400">{{ item.jenis }}</div>
-              </td>
-              <td class="py-2 px-2 text-center font-semibold">
-                {{ item.stok }}
-              </td>
-              <td class="py-2 pl-2">
-                <span 
-                  class="px-2 py-1 rounded-lg text-xs font-semibold"
-                  :class="{
-                    'bg-red-100 text-red-700': item.kategori === 'Kritis',
-                    'bg-yellow-100 text-yellow-700': item.kategori === 'Rendah',
-                    'bg-green-100 text-green-700': item.kategori === 'Aman'
-                  }"
-                >
-                  {{ item.kategori }}
-                </span>
-              </td>
-            </tr>
-            <tr v-if="dataObat.length === 0">
+            <tr v-if="loading">
               <td colspan="3" class="px-5 py-8 text-center text-gray-400">
-                Belum ada data obat.
+                Memuat data...
               </td>
             </tr>
+            <tr v-else-if="dataObat.length === 0">
+              <td colspan="3" class="px-5 py-8 text-center text-gray-400">
+                Tidak ada data
+              </td>
+            </tr>
+            <template v-else>
+              <tr 
+                v-for="(item, index) in dataObat" 
+                :key="index"
+                class="hover:bg-gray-100 transition-colors"
+              >
+                <td class="py-2 pr-2">
+                  <div class="font-medium text-gray-800">{{ item.nama }}</div>
+                  <div class="text-xs text-gray-400">{{ item.jenis }}</div>
+                </td>
+                <td class="py-2 px-2 text-center font-semibold">
+                  {{ item.stok }}
+                </td>
+                <td class="py-2 pl-2">
+                  <span 
+                    class="px-2 py-1 rounded-lg text-xs font-semibold"
+                    :class="{
+                      'bg-red-100 text-red-700': item.kategori === 'Kritis',
+                      'bg-yellow-100 text-yellow-700': item.kategori === 'Rendah',
+                      'bg-green-100 text-green-700': item.kategori === 'Aman'
+                    }"
+                  >
+                    {{ item.kategori }}
+                  </span>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </table>
       </div>

@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
 const dataKunjungan = ref([]);
-const loading = ref(true);
+const isLoading = ref(true);
 const errorMsg = ref('');
 
 onMounted(async () => {
@@ -30,7 +30,7 @@ onMounted(async () => {
     console.error('Error fetching data kunjungan:', error);
     errorMsg.value = 'Gagal memuat data kunjungan. ' + (error.response?.data?.error ?? error.message);
   } finally {
-    loading.value = false;
+    isLoading.value = false;
   }
 });
 </script>
@@ -70,7 +70,7 @@ onMounted(async () => {
         
         <tbody>
           <!-- Loading -->
-          <tr v-if="loading">
+          <tr v-if="isLoading">
             <td colspan="8" class="px-5 py-8 text-center text-gray-400">
               Memuat data...
             </td>

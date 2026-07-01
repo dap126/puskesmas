@@ -4,6 +4,7 @@ import { dokterService, poliService } from '../services/dokter'
 
 const daftarPoli = ref([])
 const listDokter = ref([])
+const isLoading = ref(true)
 
 async function fetchPoli() {
   try {
@@ -15,11 +16,15 @@ async function fetchPoli() {
 }
 
 async function fetchDokter() {
+  isLoading.value = true
   try {
     listDokter.value = await dokterService.getAllDokter()
   }
   catch (error) {
     console.error(error)
+  }
+  finally {
+    isLoading.value = false
   }
 }
 
@@ -76,25 +81,32 @@ function nextPage() {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(doc, index) in paginatedData" :key="doc.id_dokter" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
-                <td class="px-5 py-4 text-gray-600">
-                  {{ (currentPage - 1) * itemsPerPage + index + 1 }}
-                </td>
-                <td class="px-5 py-4 text-gray-800 font-medium">
-                  {{ doc.nama_dokter }}
-                </td>
-                <td class="px-5 py-4 text-gray-600">
-                  {{ doc.nip || '-' }}
-                </td>
-                <td class="px-5 py-4 text-gray-600 text-sm">
-                  {{ doc.no_telepon || '-' }}
-                </td>
-              </tr>
-              <tr v-if="listDokter.length === 0">
+              <tr v-if="isLoading">
                 <td colspan="4" class="py-12 text-center text-gray-400">
-                  Data tidak ditemukan atau sedang memuat...
+                  Memuat data...
                 </td>
               </tr>
+              <tr v-else-if="listDokter.length === 0">
+                <td colspan="4" class="py-12 text-center text-gray-400">
+                  Tidak ada data
+                </td>
+              </tr>
+              <template v-else>
+                <tr v-for="(doc, index) in paginatedData" :key="doc.id_dokter" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ (currentPage - 1) * itemsPerPage + index + 1 }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-800 font-medium">
+                    {{ doc.nama_dokter }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ doc.nip || '-' }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-600 text-sm">
+                    {{ doc.no_telepon || '-' }}
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
         </div>

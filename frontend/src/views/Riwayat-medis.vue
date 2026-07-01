@@ -8,6 +8,7 @@ import Swal from 'sweetalert2'
 const rawRiwayat = ref([])
 const search = ref('')
 const tanggal = ref('')
+const isLoading = ref(true)
 
 // State untuk modal detail
 const modal = ref(false)
@@ -31,6 +32,7 @@ const editResep = ref([])
 
 // Fetch Data
 async function fetchRiwayat() {
+  isLoading.value = true
   try {
     const data = await medisService.getAllMedis()
     rawRiwayat.value = data.map((item) => {
@@ -58,6 +60,9 @@ async function fetchRiwayat() {
   }
   catch (error) {
     console.error(error)
+  }
+  finally {
+    isLoading.value = false
   }
 }
 
@@ -278,48 +283,55 @@ onMounted(() => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(item, index) in paginatedData" :key="item.id" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
-                <td class="px-5 py-4 text-gray-600">
-                  {{ (currentPage - 1) * itemsPerPage + index + 1 }}
+              <tr v-if="isLoading">
+                <td colspan="7" class="py-12 text-center text-gray-400">
+                  Memuat data...
                 </td>
-                <td class="px-5 py-4 text-gray-600">
-                  {{ item.tanggal }}
+              </tr>
+              <tr v-else-if="riwayat.length === 0">
+                <td colspan="7" class="py-12 text-center text-gray-400">
+                  Tidak ada data
                 </td>
-                <td class="px-5 py-4 text-gray-800 font-medium">
-                  {{ item.pasien }}
-                </td>
-                <td class="px-5 py-4 text-gray-600">
-                  {{ item.dokter }}
-                </td>
-                <td class="px-5 py-4 text-gray-600">
-                  {{ item.keluhan }}
-                </td>
-                <td class="px-5 py-4 text-gray-600">
-                  {{ item.diagnosa }}
-                </td>
-                <td class="px-5 py-4 align-middle">
-                  <div class="flex justify-center gap-2">
-                    <button class="bg-blue-500 text-white p-1.5 rounded hover:bg-blue-600 shadow-sm transition" title="Lihat Detail" @click="lihatDetail(item)">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                      </svg>
-                    </button>
+              </tr>
+              <template v-else>
+                <tr v-for="(item, index) in paginatedData" :key="item.id" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ (currentPage - 1) * itemsPerPage + index + 1 }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ item.tanggal }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-800 font-medium">
+                    {{ item.pasien }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ item.dokter }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ item.keluhan }}
+                  </td>
+                  <td class="px-5 py-4 text-gray-600">
+                    {{ item.diagnosa }}
+                  </td>
+                  <td class="px-5 py-4 align-middle">
+                    <div class="flex justify-center gap-2">
+                      <button class="bg-blue-500 text-white p-1.5 rounded hover:bg-blue-600 shadow-sm transition" title="Lihat Detail" @click="lihatDetail(item)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                      </button>
 
-                    <!-- Tombol Edit: terkunci jika resep sudah ditebus atau dibatalkan -->
-                    <button v-if="!['sudah', 'batal'].includes(item.status_tebus)" class="bg-orange-500 text-white p-1.5 rounded hover:bg-orange-600 shadow-sm transition" title="Edit Rekam Medis" @click="bukaEdit(item)">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                      </svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr v-if="riwayat.length === 0">
-                <td colspan="6" class="py-12 text-center text-gray-400">
-                  Data tidak ditemukan...
-                </td>
-              </tr>
+                      <!-- Tombol Edit: terkunci jika resep sudah ditebus atau dibatalkan -->
+                      <button v-if="!['sudah', 'batal'].includes(item.status_tebus)" class="bg-orange-500 text-white p-1.5 rounded hover:bg-orange-600 shadow-sm transition" title="Edit Rekam Medis" @click="bukaEdit(item)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
         </div>

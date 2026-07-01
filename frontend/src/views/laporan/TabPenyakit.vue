@@ -8,6 +8,7 @@ const ringkasan = ref({
 });
 
 const dataPenyakit = ref([]);
+const loading = ref(true);
 
 // Warna-warni statis untuk bar chart
 const chartColors = [
@@ -37,6 +38,8 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('Error fetching data penyakit:', error);
+  } finally {
+    loading.value = false;
   }
 });
 </script>
@@ -62,30 +65,33 @@ onMounted(async () => {
       <div>
         <h5 class="text-sm font-bold text-gray-700 mb-3">Detail Penyakit Berdasarkan Jumlah Kasus</h5>
         <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
-          <div 
-            v-for="(item, index) in dataPenyakit" 
-            :key="index"
-            class="mb-3 last:mb-0"
-          >
-            <div class="flex justify-between items-center mb-1">
-              <span class="text-sm text-gray-600 font-medium">{{ item.nama }}</span>
-              <span class="text-xs text-gray-500 font-semibold">{{ item.jumlah }} pasien</span>
-            </div>
-            <div class="h-2.5 bg-gray-200 rounded-full overflow-hidden">
-              <div 
-                class="h-full rounded-full transition-all duration-700 ease-out"
-                :style="{ 
-                  width: (item.jumlah / dataPenyakit[0].jumlah) * 100 + '%', 
-                  backgroundColor: item.warna 
-                }"
-              ></div>
-            </div>
+          <div v-if="loading" class="text-center py-8 text-gray-400">
+            Memuat data...
           </div>
-          <tr v-if="dataPenyakit.length === 0">
-            <td colspan="4" class="px-5 py-8 text-center text-gray-400 justify-content-center">
-              Belum ada data penyakit.
-            </td>
-          </tr>
+          <div v-else-if="dataPenyakit.length === 0" class="text-center py-8 text-gray-400">
+            Tidak ada data
+          </div>
+          <template v-else>
+            <div 
+              v-for="(item, index) in dataPenyakit" 
+              :key="index"
+              class="mb-3 last:mb-0"
+            >
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-sm text-gray-600 font-medium">{{ item.nama }}</span>
+                <span class="text-xs text-gray-500 font-semibold">{{ item.jumlah }} pasien</span>
+              </div>
+              <div class="h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  class="h-full rounded-full transition-all duration-700 ease-out"
+                  :style="{ 
+                    width: (item.jumlah / dataPenyakit[0].jumlah) * 100 + '%', 
+                    backgroundColor: item.warna 
+                  }"
+                ></div>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
     </div>

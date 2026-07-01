@@ -12,6 +12,7 @@ export default {
     const medisList = ref([])
     const showModal = ref(false)
     const currentPasienId = ref(null)
+    const isLoading = ref(true)
 
     const form = ref({
       nama_pasien: '',
@@ -20,6 +21,7 @@ export default {
     })
 
     const fetchAllData = async () => {
+      isLoading.value = true
       try {
         const [pData, aData, mData] = await Promise.all([
           pasienService.getAllPasien(),
@@ -35,6 +37,9 @@ export default {
       }
       catch (error) {
         console.error(error.message)
+      }
+      finally {
+        isLoading.value = false
       }
     }
 
@@ -169,7 +174,8 @@ export default {
       itemsPerPage,
       totalPages,
       paginatedData,
-      activeList
+      activeList,
+      isLoading
     }
   },
 }
@@ -235,31 +241,38 @@ export default {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(pasien, index) in paginatedData" :key="pasien.idpasien" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
-                <td class="px-5 py-4 text-gray-600">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
-                <td class="px-5 py-4 text-gray-800 font-medium">{{ pasien.nama_pasien }}</td>
-                <td class="px-5 py-4 text-gray-600 text-sm">{{ pasien.no_telepon || '-' }}</td>
-                <td class="px-5 py-4 text-gray-600">{{ pasien.alamat || '-' }}</td>
-                <td class="px-5 py-4 align-middle">
-                  <div class="flex justify-center gap-2">
-                    <button @click="editPasien(pasien)" class="bg-blue-500 text-white p-1.5 rounded hover:bg-blue-600 shadow-sm transition" title="Edit Pasien">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.862 4.487Zm0 0L19.5 7.15M6.832 19.82l-1.897-1.13" />
-                      </svg>
-                    </button>
-                    <button @click="confirmDelete('pasien', pasien.idpasien)" class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition" title="Hapus Pasien">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                      </svg>
-                    </button>
-                  </div>
+              <tr v-if="isLoading">
+                <td colspan="5" class="py-12 text-center text-gray-400">
+                  Memuat data...
                 </td>
               </tr>
-              <tr v-if="paginatedData.length === 0">
+              <tr v-else-if="paginatedData.length === 0">
                 <td colspan="5" class="py-12 text-center text-gray-400">
                   Belum ada data pasien terdaftar.
                 </td>
               </tr>
+              <template v-else>
+                <tr v-for="(pasien, index) in paginatedData" :key="pasien.idpasien" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
+                  <td class="px-5 py-4 text-gray-600">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
+                  <td class="px-5 py-4 text-gray-800 font-medium">{{ pasien.nama_pasien }}</td>
+                  <td class="px-5 py-4 text-gray-600 text-sm">{{ pasien.no_telepon || '-' }}</td>
+                  <td class="px-5 py-4 text-gray-600">{{ pasien.alamat || '-' }}</td>
+                  <td class="px-5 py-4 align-middle">
+                    <div class="flex justify-center gap-2">
+                      <button @click="editPasien(pasien)" class="bg-blue-500 text-white p-1.5 rounded hover:bg-blue-600 shadow-sm transition" title="Edit Pasien">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.862 4.487Zm0 0L19.5 7.15M6.832 19.82l-1.897-1.13" />
+                        </svg>
+                      </button>
+                      <button @click="confirmDelete('pasien', pasien.idpasien)" class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition" title="Hapus Pasien">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
 
@@ -275,30 +288,37 @@ export default {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(antrean) in paginatedData" :key="antrean.idantrean" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
-                <td class="px-5 py-4 text-gray-800 font-medium">{{ antrean.no_antrean }}</td>
-                <td class="px-5 py-4 text-gray-800">{{ getPasienName(antrean.pasien_idpasien) }}</td>
-                <td class="px-5 py-4 text-gray-600 text-sm">{{ antrean.tgl_antrean ? new Date(antrean.tgl_antrean).toLocaleDateString('id-ID') : '-' }}</td>
-                <td class="px-5 py-4 text-gray-600 text-sm">
-                  <span v-if="antrean.status === 'Menunggu' || antrean.status === 'menunggu'" class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Menunggu</span>
-                  <span v-else-if="antrean.status === 'Selesai' || antrean.status === 'selesai'" class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Selesai</span>
-                  <span v-else class="text-gray-400">{{ antrean.status || '-' }}</span>
-                </td>
-                <td class="px-5 py-4 align-middle">
-                  <div class="flex justify-center gap-2">
-                    <button @click="confirmDelete('antrean', antrean.idantrean)" class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition" title="Hapus Permanen">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                      </svg>
-                    </button>
-                  </div>
+              <tr v-if="isLoading">
+                <td colspan="5" class="py-12 text-center text-gray-400">
+                  Memuat data...
                 </td>
               </tr>
-              <tr v-if="paginatedData.length === 0">
-                <td colspan="4" class="py-12 text-center text-gray-400">
+              <tr v-else-if="paginatedData.length === 0">
+                <td colspan="5" class="py-12 text-center text-gray-400">
                   Belum ada data antrean terdaftar.
                 </td>
               </tr>
+              <template v-else>
+                <tr v-for="(antrean) in paginatedData" :key="antrean.idantrean" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
+                  <td class="px-5 py-4 text-gray-800 font-medium">{{ antrean.no_antrean }}</td>
+                  <td class="px-5 py-4 text-gray-800">{{ getPasienName(antrean.pasien_idpasien) }}</td>
+                  <td class="px-5 py-4 text-gray-600 text-sm">{{ antrean.tgl_antrean ? new Date(antrean.tgl_antrean).toLocaleDateString('id-ID') : '-' }}</td>
+                  <td class="px-5 py-4 text-gray-600 text-sm">
+                    <span v-if="antrean.status === 'Menunggu' || antrean.status === 'menunggu'" class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Menunggu</span>
+                    <span v-else-if="antrean.status === 'Selesai' || antrean.status === 'selesai'" class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Selesai</span>
+                    <span v-else class="text-gray-400">{{ antrean.status || '-' }}</span>
+                  </td>
+                  <td class="px-5 py-4 align-middle">
+                    <div class="flex justify-center gap-2">
+                      <button @click="confirmDelete('antrean', antrean.idantrean)" class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition" title="Hapus Permanen">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
 
@@ -316,33 +336,40 @@ export default {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(rm) in paginatedData" :key="rm.id_rm" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
-                <td class="px-5 py-4 text-gray-800 font-medium">RM-{{ String(rm.id_rm).padStart(4, '0') }}</td>
-                <td class="px-5 py-4 text-gray-800">{{ getPasienName(rm.pasien_idpasien) }}</td>
-                <td class="px-5 py-4 text-gray-600 text-sm">{{ rm.keluhan || '-' }}</td>
-                <td class="px-5 py-4 text-gray-600 text-sm">{{ rm.diagnosa || '-' }}</td>
-                <td class="px-5 py-4 text-gray-600 text-sm">{{ rm.tgl_periksa ? new Date(rm.tgl_periksa).toLocaleDateString('id-ID') : '-' }}</td>
-                <td class="px-5 py-4 text-gray-600 text-sm">
-                  <span v-if="rm.status_tebus === 'belum'" class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Belum</span>
-                  <span v-else-if="rm.status_tebus === 'sudah' || rm.status_tebus === 'selesai'" class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Selesai</span>
-                  <span v-else-if="rm.status_tebus === 'batal'" class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Batal</span>
-                  <span v-else class="text-gray-400">-</span>
-                </td>
-                <td class="px-5 py-4 align-middle">
-                  <div class="flex justify-center gap-2">
-                    <button @click="confirmDelete('riwayat', rm.id_rm)" class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition" title="Hapus Permanen">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                      </svg>
-                    </button>
-                  </div>
+              <tr v-if="isLoading">
+                <td colspan="7" class="py-12 text-center text-gray-400">
+                  Memuat data...
                 </td>
               </tr>
-              <tr v-if="paginatedData.length === 0">
-                <td colspan="6" class="py-12 text-center text-gray-400">
+              <tr v-else-if="paginatedData.length === 0">
+                <td colspan="7" class="py-12 text-center text-gray-400">
                   Belum ada data riwayat medis terdaftar.
                 </td>
               </tr>
+              <template v-else>
+                <tr v-for="(rm) in paginatedData" :key="rm.id_rm" class="hover:bg-indigo-50/50 transition border-b border-gray-50 last:border-0">
+                  <td class="px-5 py-4 text-gray-800 font-medium">RM-{{ String(rm.id_rm).padStart(4, '0') }}</td>
+                  <td class="px-5 py-4 text-gray-800">{{ getPasienName(rm.pasien_idpasien) }}</td>
+                  <td class="px-5 py-4 text-gray-600 text-sm">{{ rm.keluhan || '-' }}</td>
+                  <td class="px-5 py-4 text-gray-600 text-sm">{{ rm.diagnosa || '-' }}</td>
+                  <td class="px-5 py-4 text-gray-600 text-sm">{{ rm.tgl_periksa ? new Date(rm.tgl_periksa).toLocaleDateString('id-ID') : '-' }}</td>
+                  <td class="px-5 py-4 text-gray-600 text-sm">
+                    <span v-if="rm.status_tebus === 'belum'" class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Belum</span>
+                    <span v-else-if="rm.status_tebus === 'sudah' || rm.status_tebus === 'selesai'" class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Selesai</span>
+                    <span v-else-if="rm.status_tebus === 'batal'" class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Batal</span>
+                    <span v-else class="text-gray-400">-</span>
+                  </td>
+                  <td class="px-5 py-4 align-middle">
+                    <div class="flex justify-center gap-2">
+                      <button @click="confirmDelete('riwayat', rm.id_rm)" class="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 shadow-sm transition" title="Hapus Permanen">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
         </div>
